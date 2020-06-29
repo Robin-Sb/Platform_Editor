@@ -1,0 +1,10 @@
+{
+    "extends": "../tsconfig",
+    "compilerOptions": {
+      "outFile": "crun.js",
+      "types": [
+        "../FudgeCore/FudgeCore",
+        "../FudgeAid/FudgeAid",
+      ]
+    }
+  }
