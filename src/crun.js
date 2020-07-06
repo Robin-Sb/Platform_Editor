@@ -2,17 +2,31 @@
 var Platform_Edtior;
 (function (Platform_Edtior) {
     var fudge = FudgeCore;
-    class BaseNode extends fudge.Node {
-        constructor() {
-            super("Test");
-            this.addComponent(new ƒ.ComponentTransform(new fudge.Matrix4x4()));
-            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad);
-            this.addComponent(cmpMesh);
-            let cmpMaterial = new ƒ.ComponentMaterial(new fudge.Material("TestMtr", fudge.ShaderFlat, new fudge.CoatColored(new fudge.Color(0, 1, 0))));
-            this.addComponent(cmpMaterial);
+    class PickableNode extends fudge.Node {
+        constructor(name) {
+            super(name);
             this.addComponent(new Platform_Edtior.ComponentPicker());
         }
     }
+    Platform_Edtior.PickableNode = PickableNode;
+})(Platform_Edtior || (Platform_Edtior = {}));
+///<reference path="./PickableNode.ts" />
+var Platform_Edtior;
+///<reference path="./PickableNode.ts" />
+(function (Platform_Edtior) {
+    var fudge = FudgeCore;
+    class BaseNode extends Platform_Edtior.PickableNode {
+        constructor() {
+            super("BaseNode");
+            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
+            this.addComponent(cmpMesh);
+            let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
+            cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
+            this.addComponent(cmpMaterial);
+        }
+    }
+    BaseNode.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
     Platform_Edtior.BaseNode = BaseNode;
 })(Platform_Edtior || (Platform_Edtior = {}));
 var Platform_Edtior;
@@ -63,9 +77,8 @@ var Platform_Edtior;
     window.addEventListener("load", editorLoad);
     let oldX;
     let oldY;
-    let selectedNode;
-    let cameraZ = 5;
     function editorLoad(_event) {
+        let cameraZ = 5;
         let graph = new fudge.Node("graph");
         let editorGraph = new fudge.Node("Editor Graph");
         const canvas = document.querySelector("#scene_canvas");
@@ -77,18 +90,10 @@ var Platform_Edtior;
         cmpCamera.backgroundColor = fudge.Color.CSS("LightSkyBlue");
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
         fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
-        //let testCube: fudge.Node = new fudgeAid.Node("Test", new fudge.Matrix4x4(), new fudge.Material("TestMtr", fudge.ShaderFlat, new fudge.CoatColored(fudge.Color.CSS("green"))), new fudge.MeshQuad); 
-        //graph.addChild(testCube);
         Platform_Edtior.viewport = new fudge.Viewport();
         Platform_Edtior.viewport.initialize("Viewport", graph, cmpCamera, canvas);
         Platform_Edtior.viewport.addEventListener("\u0192pointermove" /* MOVE */, pointerMove);
         Platform_Edtior.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
-        Platform_Edtior.viewport.addEventListener("\u0192pointermove" /* MOVE */, dragNode);
-        Platform_Edtior.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
-        Platform_Edtior.viewport.addEventListener("\u0192pointerdown" /* DOWN */, pickSceneNode);
-        Platform_Edtior.viewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
-        Platform_Edtior.viewport.addEventListener("\u0192pointerup" /* UP */, releaseNode);
-        Platform_Edtior.viewport.activatePointerEvent("\u0192pointerup" /* UP */, true);
         const editorCanvas = document.querySelector("#editor_canvas");
         Platform_Edtior.editorViewport = new fudge.Viewport();
         let editorCamera = new fudge.ComponentCamera();
@@ -98,17 +103,10 @@ var Platform_Edtior;
         editorGraph.addChild(new Platform_Edtior.BaseNode());
         Platform_Edtior.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
         Platform_Edtior.editorViewport.draw();
-        Platform_Edtior.editorViewport.addEventListener("\u0192pointerdown" /* DOWN */, pickEditorNode);
-        Platform_Edtior.editorViewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
-        // add pointer move and pointer down to standard viewport
+        // tslint:disable-next-line: no-unused-expression
+        new Platform_Edtior.ViewportControl(cameraZ);
         Platform_Edtior.viewport.draw();
-        // fudge.Loop.addEventListener(fudge.EVENT.LOOP_FRAME, update);
-        // fudge.Loop.start(fudge.LOOP_MODE.TIME_REAL, 2);
     }
-    // function update(): void {
-    //     viewport.draw();
-    //     editorViewport.draw();
-    // }
     function pointerMove(_event) {
         let scale = 0.005;
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.SHIFT_LEFT])) {
@@ -120,71 +118,6 @@ var Platform_Edtior;
         oldX = _event.canvasX;
         oldY = _event.canvasY;
     }
-    function convertToMainViewport(selectedNode) {
-        Platform_Edtior.editorViewport.getGraph().removeChild(selectedNode);
-        selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Edtior.viewport.camera.pivot.translation.x, Platform_Edtior.viewport.camera.pivot.translation.y, 0);
-        Platform_Edtior.viewport.getGraph().addChild(selectedNode);
-    }
-    function pickSceneNode(_event) {
-        let pickedNodes = pickNodes(_event.canvasX, _event.canvasY, Platform_Edtior.viewport);
-        if (pickedNodes) {
-            selectedNode = pickedNodes[0];
-        }
-    }
-    function dragNode(_event) {
-        let posMouse = new fudge.Vector2(_event.canvasX, _event.canvasY);
-        if (selectedNode) {
-            let cmpMaterial = selectedNode.getComponent(fudge.ComponentMaterial);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("yellow");
-            let rayEnd = convertClientToRay(posMouse);
-            console.log(rayEnd);
-            let cmpTransform = selectedNode.getComponent(fudge.ComponentTransform);
-            cmpTransform.local.translation = rayEnd;
-            Platform_Edtior.viewport.draw();
-        }
-    }
-    function releaseNode(_event) {
-        if (selectedNode) {
-            let cmpMaterial = selectedNode.getComponent(fudge.ComponentMaterial);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("green");
-            selectedNode = null;
-            Platform_Edtior.viewport.draw();
-        }
-    }
-    function convertClientToRay(_mousepos) {
-        let posProjection = Platform_Edtior.viewport.pointClientToProjection(_mousepos);
-        let ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
-        let camera = Platform_Edtior.viewport.camera;
-        // scale by z direction
-        ray.direction.scale(cameraZ);
-        ray.origin.transform(camera.pivot);
-        ray.direction.transform(camera.pivot, false);
-        let rayEnd = fudge.Vector3.SUM(ray.origin, ray.direction);
-        return rayEnd;
-    }
-    function pickEditorNode(_event) {
-        let pickedNodes = pickNodes(_event.canvasX, _event.canvasY, Platform_Edtior.editorViewport);
-        // maybe think of some logic to find the most senseful item (z-index?)
-        for (let node of pickedNodes) {
-            convertToMainViewport(node);
-        }
-        Platform_Edtior.viewport.draw();
-        Platform_Edtior.editorViewport.draw();
-    }
-    function pickNodes(x, y, usedViewport) {
-        let posMouse = new fudge.Vector2(x, y);
-        let nodes = usedViewport.getGraph().getChildren();
-        let picked = [];
-        for (let node of nodes) {
-            let cmpPicker = node.getComponent(Platform_Edtior.ComponentPicker);
-            let pickData = cmpPicker.pick(posMouse, usedViewport);
-            if (pickData) {
-                picked.push(node);
-                console.log(pickData);
-            }
-        }
-        return picked;
-    }
     // function event(): void {
     //     let node: fudge.Node = new fudge.Node("node");
     //     let child: fudge.Node = new fudge.Node("child");
@@ -195,5 +128,88 @@ var Platform_Edtior;
     // function callChild(_event: Event): void {
     //     console.log(_event.target);
     // }
+})(Platform_Edtior || (Platform_Edtior = {}));
+var Platform_Edtior;
+(function (Platform_Edtior) {
+    var fudge = FudgeCore;
+    class ViewportControl {
+        constructor(cameraZ) {
+            this.pickSceneNode = (_event) => {
+                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Edtior.viewport);
+                if (pickedNodes) {
+                    this.selectedNode = pickedNodes[0];
+                }
+            };
+            this.dragNode = (_event) => {
+                let posMouse = new fudge.Vector2(_event.canvasX, _event.canvasY);
+                if (this.selectedNode) {
+                    let cmpMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
+                    cmpMaterial.clrPrimary = fudge.Color.CSS("yellow");
+                    let rayEnd = this.convertClientToRay(posMouse);
+                    console.log(rayEnd);
+                    let cmpTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
+                    cmpTransform.local.translation = rayEnd;
+                    Platform_Edtior.viewport.draw();
+                }
+            };
+            this.releaseNode = (_event) => {
+                if (this.selectedNode) {
+                    let cmpMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
+                    cmpMaterial.clrPrimary = fudge.Color.CSS("green");
+                    this.selectedNode = null;
+                    Platform_Edtior.viewport.draw();
+                }
+            };
+            this.pickEditorNode = (_event) => {
+                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Edtior.editorViewport);
+                // maybe think of some logic to find the most senseful item (z-index?)
+                for (let node of pickedNodes) {
+                    this.convertToMainViewport(node);
+                }
+                Platform_Edtior.viewport.draw();
+                Platform_Edtior.editorViewport.draw();
+            };
+            this.cameraZ = cameraZ;
+            Platform_Edtior.viewport.addEventListener("\u0192pointermove" /* MOVE */, this.dragNode);
+            Platform_Edtior.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
+            Platform_Edtior.viewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickSceneNode);
+            Platform_Edtior.viewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
+            Platform_Edtior.viewport.addEventListener("\u0192pointerup" /* UP */, this.releaseNode);
+            Platform_Edtior.viewport.activatePointerEvent("\u0192pointerup" /* UP */, true);
+            Platform_Edtior.editorViewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickEditorNode);
+            Platform_Edtior.editorViewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
+        }
+        convertToMainViewport(selectedNode) {
+            Platform_Edtior.editorViewport.getGraph().removeChild(selectedNode);
+            selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Edtior.viewport.camera.pivot.translation.x, Platform_Edtior.viewport.camera.pivot.translation.y, 0);
+            Platform_Edtior.viewport.getGraph().addChild(selectedNode);
+        }
+        convertClientToRay(_mousepos) {
+            let posProjection = Platform_Edtior.viewport.pointClientToProjection(_mousepos);
+            let ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
+            let camera = Platform_Edtior.viewport.camera;
+            // scale by z direction
+            ray.direction.scale(this.cameraZ);
+            ray.origin.transform(camera.pivot);
+            ray.direction.transform(camera.pivot, false);
+            let rayEnd = fudge.Vector3.SUM(ray.origin, ray.direction);
+            return rayEnd;
+        }
+        pickNodes(x, y, usedViewport) {
+            let posMouse = new fudge.Vector2(x, y);
+            let nodes = usedViewport.getGraph().getChildren();
+            let picked = [];
+            for (let node of nodes) {
+                let cmpPicker = node.getComponent(Platform_Edtior.ComponentPicker);
+                let pickData = cmpPicker.pick(posMouse, usedViewport);
+                if (pickData) {
+                    picked.push(node);
+                    console.log(pickData);
+                }
+            }
+            return picked;
+        }
+    }
+    Platform_Edtior.ViewportControl = ViewportControl;
 })(Platform_Edtior || (Platform_Edtior = {}));
 //# sourceMappingURL=crun.js.map
