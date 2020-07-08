@@ -1,4 +1,4 @@
-namespace Platform_Edtior {
+namespace Platform_Editor {
     import fudge = FudgeCore;
     import fudgeAid = FudgeAid;
 
@@ -11,7 +11,7 @@ namespace Platform_Edtior {
     let oldY: number;
 
     function editorLoad(_event: Event): void {
-        let cameraZ: number = 5;
+        let cameraZ: number = 10;
         let graph: fudge.Node = new fudge.Node("graph");
         let editorGraph: fudge.Node = new fudge.Node("Editor Graph");
         const canvas: HTMLCanvasElement = document.querySelector("#scene_canvas");
@@ -41,9 +41,11 @@ namespace Platform_Edtior {
         editorCamera.pivot.translateZ(5);
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
         editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
-        editorGraph.addChild(new BaseNode());
 
         editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
+        new BaseNode();
+        new Enemy();
+
         editorViewport.draw();
 
         // tslint:disable-next-line: no-unused-expression
@@ -53,8 +55,8 @@ namespace Platform_Edtior {
     }
 
     function pointerMove(_event: fudge.EventPointer): void {
-        let scale: number = 0.005;
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.SHIFT_LEFT])) {
+            let scale: number = 0.005;
             let xChange: number = (_event.canvasX - oldX) * scale;
             let yChange: number = (_event.canvasY - oldY) * scale;
     

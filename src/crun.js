@@ -1,36 +1,40 @@
 "use strict";
-var Platform_Edtior;
-(function (Platform_Edtior) {
+var Platform_Editor;
+(function (Platform_Editor) {
     var fudge = FudgeCore;
     class PickableNode extends fudge.Node {
         constructor(name) {
             super(name);
-            this.addComponent(new Platform_Edtior.ComponentPicker());
+            Platform_Editor.editorViewport.getGraph().addChild(this);
+            this.addComponent(new Platform_Editor.ComponentPicker());
         }
     }
-    Platform_Edtior.PickableNode = PickableNode;
-})(Platform_Edtior || (Platform_Edtior = {}));
+    Platform_Editor.PickableNode = PickableNode;
+})(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
-var Platform_Edtior;
+var Platform_Editor;
 ///<reference path="./PickableNode.ts" />
-(function (Platform_Edtior) {
+(function (Platform_Editor) {
     var fudge = FudgeCore;
-    class BaseNode extends Platform_Edtior.PickableNode {
+    class BaseNode extends Platform_Editor.PickableNode {
         constructor() {
             super("BaseNode");
-            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0))));
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
             let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
             cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
             this.addComponent(cmpMaterial);
         }
+        create() {
+            new BaseNode();
+        }
     }
     BaseNode.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
-    Platform_Edtior.BaseNode = BaseNode;
-})(Platform_Edtior || (Platform_Edtior = {}));
-var Platform_Edtior;
-(function (Platform_Edtior) {
+    Platform_Editor.BaseNode = BaseNode;
+})(Platform_Editor || (Platform_Editor = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
     var fudge = FudgeCore;
     class ComponentPicker extends fudge.Component {
         constructor(_radius = 0.5) {
@@ -67,10 +71,30 @@ var Platform_Edtior;
             return { clip: projection, canvas: posClient, radius: fudge.Vector2.DIFFERENCE(posRadius, posClient) };
         }
     }
-    Platform_Edtior.ComponentPicker = ComponentPicker;
-})(Platform_Edtior || (Platform_Edtior = {}));
-var Platform_Edtior;
-(function (Platform_Edtior) {
+    Platform_Editor.ComponentPicker = ComponentPicker;
+})(Platform_Editor || (Platform_Editor = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
+    var fudge = FudgeCore;
+    class Enemy extends Platform_Editor.PickableNode {
+        constructor() {
+            super("Enemy");
+            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
+            this.addComponent(cmpMesh);
+            let cmpMaterial = new fudge.ComponentMaterial(Enemy.material);
+            cmpMaterial.clrPrimary = fudge.Color.CSS("Red");
+            this.addComponent(cmpMaterial);
+        }
+        create() {
+            new Enemy();
+        }
+    }
+    Enemy.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
+    Platform_Editor.Enemy = Enemy;
+})(Platform_Editor || (Platform_Editor = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
     var fudge = FudgeCore;
     var fudgeAid = FudgeAid;
     fudge.RenderManager.initialize(true, true);
@@ -78,7 +102,7 @@ var Platform_Edtior;
     let oldX;
     let oldY;
     function editorLoad(_event) {
-        let cameraZ = 5;
+        let cameraZ = 10;
         let graph = new fudge.Node("graph");
         let editorGraph = new fudge.Node("Editor Graph");
         const canvas = document.querySelector("#scene_canvas");
@@ -90,30 +114,31 @@ var Platform_Edtior;
         cmpCamera.backgroundColor = fudge.Color.CSS("LightSkyBlue");
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
         fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
-        Platform_Edtior.viewport = new fudge.Viewport();
-        Platform_Edtior.viewport.initialize("Viewport", graph, cmpCamera, canvas);
-        Platform_Edtior.viewport.addEventListener("\u0192pointermove" /* MOVE */, pointerMove);
-        Platform_Edtior.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
+        Platform_Editor.viewport = new fudge.Viewport();
+        Platform_Editor.viewport.initialize("Viewport", graph, cmpCamera, canvas);
+        Platform_Editor.viewport.addEventListener("\u0192pointermove" /* MOVE */, pointerMove);
+        Platform_Editor.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
         const editorCanvas = document.querySelector("#editor_canvas");
-        Platform_Edtior.editorViewport = new fudge.Viewport();
+        Platform_Editor.editorViewport = new fudge.Viewport();
         let editorCamera = new fudge.ComponentCamera();
         editorCamera.pivot.translateZ(5);
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
         editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
-        editorGraph.addChild(new Platform_Edtior.BaseNode());
-        Platform_Edtior.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-        Platform_Edtior.editorViewport.draw();
+        Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
+        new Platform_Editor.BaseNode();
+        new Platform_Editor.Enemy();
+        Platform_Editor.editorViewport.draw();
         // tslint:disable-next-line: no-unused-expression
-        new Platform_Edtior.ViewportControl(cameraZ);
-        Platform_Edtior.viewport.draw();
+        new Platform_Editor.ViewportControl(cameraZ);
+        Platform_Editor.viewport.draw();
     }
     function pointerMove(_event) {
-        let scale = 0.005;
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.SHIFT_LEFT])) {
+            let scale = 0.005;
             let xChange = (_event.canvasX - oldX) * scale;
             let yChange = (_event.canvasY - oldY) * scale;
-            Platform_Edtior.viewport.camera.pivot.translate(new fudge.Vector3(xChange, yChange, 0));
-            Platform_Edtior.viewport.draw();
+            Platform_Editor.viewport.camera.pivot.translate(new fudge.Vector3(xChange, yChange, 0));
+            Platform_Editor.viewport.draw();
         }
         oldX = _event.canvasX;
         oldY = _event.canvasY;
@@ -128,14 +153,16 @@ var Platform_Edtior;
     // function callChild(_event: Event): void {
     //     console.log(_event.target);
     // }
-})(Platform_Edtior || (Platform_Edtior = {}));
-var Platform_Edtior;
-(function (Platform_Edtior) {
+})(Platform_Editor || (Platform_Editor = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
     var fudge = FudgeCore;
     class ViewportControl {
+        //private states: Array<{funct: (node: fudge.Node) => void, object: fudge.Node}> = new Array<{funct: (node: fudge.Node) => void, object: fudge.Node}>();
+        //private states: Array<fudge.Node[]> = new Array<fudge.Node[]>();
         constructor(cameraZ) {
             this.pickSceneNode = (_event) => {
-                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Edtior.viewport);
+                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.viewport);
                 if (pickedNodes) {
                     this.selectedNode = pickedNodes[0];
                 }
@@ -144,51 +171,70 @@ var Platform_Edtior;
                 let posMouse = new fudge.Vector2(_event.canvasX, _event.canvasY);
                 if (this.selectedNode) {
                     let cmpMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                    cmpMaterial.clrPrimary = fudge.Color.CSS("yellow");
+                    cmpMaterial.clrPrimary = fudge.Color.CSS("red");
                     let rayEnd = this.convertClientToRay(posMouse);
-                    console.log(rayEnd);
                     let cmpTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
                     cmpTransform.local.translation = rayEnd;
-                    Platform_Edtior.viewport.draw();
+                    Platform_Editor.viewport.draw();
                 }
             };
             this.releaseNode = (_event) => {
                 if (this.selectedNode) {
                     let cmpMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                    cmpMaterial.clrPrimary = fudge.Color.CSS("green");
+                    cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
                     this.selectedNode = null;
-                    Platform_Edtior.viewport.draw();
+                    Platform_Editor.viewport.draw();
                 }
             };
             this.pickEditorNode = (_event) => {
-                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Edtior.editorViewport);
+                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.editorViewport);
                 // maybe think of some logic to find the most senseful item (z-index?)
                 for (let node of pickedNodes) {
                     this.convertToMainViewport(node);
+                    switch (node.constructor) {
+                        case Platform_Editor.Enemy:
+                            new Platform_Editor.Enemy();
+                            break;
+                        case Platform_Editor.BaseNode:
+                            new Platform_Editor.BaseNode();
+                            break;
+                    }
+                    // node.constructor.apply(node.create());
                 }
-                Platform_Edtior.viewport.draw();
-                Platform_Edtior.editorViewport.draw();
+                Platform_Editor.viewport.draw();
+                Platform_Editor.editorViewport.draw();
             };
             this.cameraZ = cameraZ;
-            Platform_Edtior.viewport.addEventListener("\u0192pointermove" /* MOVE */, this.dragNode);
-            Platform_Edtior.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
-            Platform_Edtior.viewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickSceneNode);
-            Platform_Edtior.viewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
-            Platform_Edtior.viewport.addEventListener("\u0192pointerup" /* UP */, this.releaseNode);
-            Platform_Edtior.viewport.activatePointerEvent("\u0192pointerup" /* UP */, true);
-            Platform_Edtior.editorViewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickEditorNode);
-            Platform_Edtior.editorViewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
+            Platform_Editor.viewport.addEventListener("\u0192pointermove" /* MOVE */, this.dragNode);
+            Platform_Editor.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
+            Platform_Editor.viewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickSceneNode);
+            Platform_Editor.viewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
+            Platform_Editor.viewport.addEventListener("\u0192pointerup" /* UP */, this.releaseNode);
+            Platform_Editor.viewport.activatePointerEvent("\u0192pointerup" /* UP */, true);
+            Platform_Editor.editorViewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickEditorNode);
+            Platform_Editor.editorViewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
+            //document.addEventListener("keydown", this.control.bind(viewport.getGraph()));
         }
+        // public appendState(state: fudge.Node[]): void {
+        //     this.states.push(state);
+        // }
+        // private control = (event: KeyboardEvent): void => {
+        //     if (event.ctrlKey && event.key === "z") {
+        //         this.this.states[this.states.length - 1].funct
+        //         viewport.draw();
+        //     }
+        // }
         convertToMainViewport(selectedNode) {
-            Platform_Edtior.editorViewport.getGraph().removeChild(selectedNode);
-            selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Edtior.viewport.camera.pivot.translation.x, Platform_Edtior.viewport.camera.pivot.translation.y, 0);
-            Platform_Edtior.viewport.getGraph().addChild(selectedNode);
+            Platform_Editor.editorViewport.getGraph().removeChild(selectedNode);
+            selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Editor.viewport.camera.pivot.translation.x, Platform_Editor.viewport.camera.pivot.translation.y, 0);
+            Platform_Editor.viewport.getGraph().addChild(selectedNode);
         }
+        // might do the same thing as getRayFromClient
         convertClientToRay(_mousepos) {
-            let posProjection = Platform_Edtior.viewport.pointClientToProjection(_mousepos);
+            let posProjection = Platform_Editor.viewport.pointClientToProjection(_mousepos);
             let ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
-            let camera = Platform_Edtior.viewport.camera;
-            // scale by z direction
+            let camera = Platform_Editor.viewport.camera;
+            // scale by z direction of camera
             ray.direction.scale(this.cameraZ);
             ray.origin.transform(camera.pivot);
             ray.direction.transform(camera.pivot, false);
@@ -200,7 +246,7 @@ var Platform_Edtior;
             let nodes = usedViewport.getGraph().getChildren();
             let picked = [];
             for (let node of nodes) {
-                let cmpPicker = node.getComponent(Platform_Edtior.ComponentPicker);
+                let cmpPicker = node.getComponent(Platform_Editor.ComponentPicker);
                 let pickData = cmpPicker.pick(posMouse, usedViewport);
                 if (pickData) {
                     picked.push(node);
@@ -210,6 +256,6 @@ var Platform_Edtior;
             return picked;
         }
     }
-    Platform_Edtior.ViewportControl = ViewportControl;
-})(Platform_Edtior || (Platform_Edtior = {}));
+    Platform_Editor.ViewportControl = ViewportControl;
+})(Platform_Editor || (Platform_Editor = {}));
 //# sourceMappingURL=crun.js.map

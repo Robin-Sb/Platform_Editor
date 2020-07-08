@@ -1,4 +1,4 @@
-namespace Platform_Edtior {
+namespace Platform_Editor {
   import fudge = FudgeCore;
   // import fudgeAid = FudgeAid;
 
