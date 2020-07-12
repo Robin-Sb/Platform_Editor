@@ -16,10 +16,5 @@ namespace Platform_Editor {
             cmpMaterial.clrPrimary = fudge.Color.CSS("Red");
             this.addComponent(cmpMaterial);
         }
-
-        public create(): void {
-            new Enemy();
-        }
-
     }
 }

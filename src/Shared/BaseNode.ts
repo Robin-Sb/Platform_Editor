@@ -17,10 +17,5 @@
             cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
             this.addComponent(cmpMaterial);   
         }
-
-        public create(): void {
-            new BaseNode();
-        }
-
     }
 }

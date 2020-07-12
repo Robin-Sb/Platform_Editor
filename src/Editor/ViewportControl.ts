@@ -3,8 +3,11 @@ namespace Platform_Editor {
     export class ViewportControl {
         private selectedNode: PickableNode;
         private cameraZ: number;
+
+        // look at mutators again and serialization
+
         //private states: Array<{funct: (node: fudge.Node) => void, object: fudge.Node}> = new Array<{funct: (node: fudge.Node) => void, object: fudge.Node}>();
-        //private states: Array<fudge.Node[]> = new Array<fudge.Node[]>();
+        //private states: Array<fudge.Node> = new Array<fudge.Node>();
 
         constructor(cameraZ: number) {
             this.cameraZ = cameraZ;
@@ -94,12 +97,17 @@ namespace Platform_Editor {
             for (let node of pickedNodes) {
                 this.convertToMainViewport(node);
 
+                let pickableNode: PickableNode;
+
                 switch (node.constructor) {
-                    case Enemy: new Enemy();
+                    case Enemy: 
+                        pickableNode = new Enemy();
                         break;
-                    case BaseNode: new BaseNode();
+                    case BaseNode: 
+                        pickableNode = new BaseNode();
                         break;
                 }
+                editorViewport.getGraph().addChild(pickableNode);
                 // node.constructor.apply(node.create());
             }
             

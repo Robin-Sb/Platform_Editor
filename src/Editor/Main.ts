@@ -1,20 +1,22 @@
 namespace Platform_Editor {
     import fudge = FudgeCore;
     import fudgeAid = FudgeAid;
-
-    fudge.RenderManager.initialize(true, true);
+    
     export let viewport: fudge.Viewport;
     export let editorViewport: fudge.Viewport;
     window.addEventListener("load", editorLoad);
 
     let oldX: number;
     let oldY: number;
+    let graph: fudge.Node = new fudge.Node("graph");
+ 
 
     function editorLoad(_event: Event): void {
         let cameraZ: number = 10;
-        let graph: fudge.Node = new fudge.Node("graph");
-        let editorGraph: fudge.Node = new fudge.Node("Editor Graph");
         const canvas: HTMLCanvasElement = document.querySelector("#scene_canvas");
+        const button: HTMLButtonElement =  document.querySelector("#save_game");
+        button.addEventListener("click", serializeGraph);
+        
         oldX = canvas.width / 2;
         oldY = canvas.height / 2;
         
@@ -24,16 +26,16 @@ namespace Platform_Editor {
         cmpCamera.backgroundColor = fudge.Color.CSS("LightSkyBlue");
 
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
-        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
 
         viewport = new fudge.Viewport();
-
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
         viewport.addEventListener(fudge.EVENT_POINTER.MOVE, pointerMove);
         viewport.activatePointerEvent(fudge.EVENT_POINTER.MOVE, true);
 
         const editorCanvas: HTMLCanvasElement = document.querySelector("#editor_canvas");
+        let editorGraph: fudge.Node = new fudge.Node("Editor Graph");
+        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
 
         editorViewport = new fudge.Viewport();
         
@@ -43,8 +45,8 @@ namespace Platform_Editor {
         editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
 
         editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-        new BaseNode();
-        new Enemy();
+        editorGraph.addChild(new BaseNode());
+        editorGraph.addChild(new Enemy());
 
         editorViewport.draw();
 
@@ -66,6 +68,29 @@ namespace Platform_Editor {
         oldX = _event.canvasX;
         oldY = _event.canvasY;
     }
+
+    function serializeGraph(): void {
+        fudge.Serializer.registerNamespace(Platform_Editor);
+        let serialization: fudge.Serialization = fudge.Serializer.serialize(graph);
+        let json: string = fudge.Serializer.stringify(serialization);
+        console.log(json);
+        save(json, "text.json");
+    }
+
+    function save(_content: string, _filename: string): void {
+        let blob: Blob = new Blob([_content], { type: "text/plain" });
+        let url: string = window.URL.createObjectURL(blob);
+        //*/ using anchor element for download
+        let downloader: HTMLAnchorElement;
+        downloader = document.createElement("a");
+        downloader.setAttribute("href", url);
+        downloader.setAttribute("download", _filename);
+        document.body.appendChild(downloader);
+        downloader.click();
+        document.body.removeChild(downloader);
+        window.URL.revokeObjectURL(url);
+    }    
+    
     // function event(): void {
     //     let node: fudge.Node = new fudge.Node("node");
     //     let child: fudge.Node = new fudge.Node("child");
