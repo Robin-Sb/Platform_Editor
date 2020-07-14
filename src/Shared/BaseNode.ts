@@ -8,7 +8,8 @@
 
         constructor() {
             super("BaseNode");
-            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0))));
+            let cmpTransform: fudge.ComponentTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)))
+            this.addComponent(cmpTransform);
       
             let cmpMesh: fudge.ComponentMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);

@@ -1,0 +1,14 @@
+{
+    "extends": "../../tsconfig",
+    "compilerOptions": {
+      "outFile": "Game.js",
+      "types": [
+        "../../FudgeCore/FudgeCore",
+        "../../FudgeAid/FudgeAid",
+      ]
+    }, "files": [
+        "Main.ts",
+    ], "include": [
+        "../Shared/*"
+    ]
+  }

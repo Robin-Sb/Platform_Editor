@@ -14,6 +14,7 @@ namespace Platform_Editor {
     public constructor(_radius: number = 0.5) {
       super();
       this.radius = _radius;
+      this.singleton = false;
     } 
 
     public drawPickRadius(_viewport: fudge.Viewport): void {
