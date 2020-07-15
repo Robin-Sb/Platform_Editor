@@ -29,8 +29,8 @@ var Platform_Editor;
     class PickableNode extends fudge.Node {
         constructor(name) {
             super(name);
-            let picker = new Platform_Editor.ComponentPicker();
-            this.addComponent(picker);
+            //let picker: ComponentPicker = new ComponentPicker();
+            this.addComponent(new Platform_Editor.ComponentPicker());
         }
     }
     Platform_Editor.PickableNode = PickableNode;

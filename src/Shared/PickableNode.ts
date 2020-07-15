@@ -3,8 +3,8 @@ namespace Platform_Editor {
     export abstract class PickableNode extends fudge.Node {
         constructor(name: string) {
             super(name);
-            let picker: ComponentPicker = new ComponentPicker();
-            this.addComponent(picker);
+            //let picker: ComponentPicker = new ComponentPicker();
+            this.addComponent(new ComponentPicker());
         }
     }
 }
