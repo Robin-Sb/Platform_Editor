@@ -7,7 +7,7 @@ namespace Platform_Game {
 
     function gameLoad(): void {
         document.querySelector("#file-input").addEventListener("change", readSingleFile, false);
-        const canvas: HTMLCanvasElement = document.querySelector("canvas");
+        //const canvas: HTMLCanvasElement = document.querySelector("canvas");
     }
 
     function readSingleFile(event: any): void {

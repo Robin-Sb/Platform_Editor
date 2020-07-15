@@ -5,7 +5,7 @@ var Platform_Game;
     window.addEventListener("load", gameLoad);
     function gameLoad() {
         document.querySelector("#file-input").addEventListener("change", readSingleFile, false);
-        const canvas = document.querySelector("canvas");
+        //const canvas: HTMLCanvasElement = document.querySelector("canvas");
     }
     function readSingleFile(event) {
         var file = event.target.files[0];
@@ -42,7 +42,8 @@ var Platform_Editor;
     class BaseNode extends Platform_Editor.PickableNode {
         constructor() {
             super("BaseNode");
-            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0))));
+            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
+            this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
             let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
@@ -61,6 +62,7 @@ var Platform_Editor;
             super();
             this.radius = 0.5;
             this.radius = _radius;
+            this.singleton = false;
         }
         drawPickRadius(_viewport) {
             let pickData = this.getPickData(_viewport);
