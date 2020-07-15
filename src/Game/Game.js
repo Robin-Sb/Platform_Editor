@@ -29,7 +29,6 @@ var Platform_Editor;
     class PickableNode extends fudge.Node {
         constructor(name) {
             super(name);
-            //let picker: ComponentPicker = new ComponentPicker();
             this.addComponent(new Platform_Editor.ComponentPicker());
         }
     }
@@ -64,7 +63,6 @@ var Platform_Editor;
             this.radius = 0.5;
             this.radius = _radius;
             this.singleton = false;
-            console.log(this.singleton);
         }
         drawPickRadius(_viewport) {
             let pickData = this.getPickData(_viewport);
