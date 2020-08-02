@@ -19,21 +19,22 @@ var Platform_Editor;
         cmpCamera.pivot.lookAt(fudge.Vector3.ZERO());
         cmpCamera.backgroundColor = fudge.Color.CSS("LightSkyBlue");
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
+        let startTile = new fudge.Node("Start");
+        startTile.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+        let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
+        startTile.addComponent(cmpMesh);
+        graph.addChild(new fudge.Node("PickableNodes"));
+        let cmpMaterial = new fudge.ComponentMaterial(new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored()));
+        cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
+        startTile.addComponent(cmpMaterial);
+        startTile.mtxLocal.scaleX(3);
+        startTile.mtxLocal.scaleY(0.5);
+        graph.addChild(startTile);
         Platform_Editor.viewport = new fudge.Viewport();
         Platform_Editor.viewport.initialize("Viewport", graph, cmpCamera, canvas);
         Platform_Editor.viewport.addEventListener("\u0192pointermove" /* MOVE */, pointerMove);
         Platform_Editor.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
-        const editorCanvas = document.querySelector("#editor_canvas");
-        let editorGraph = new fudge.Node("Editor Graph");
-        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
-        Platform_Editor.editorViewport = new fudge.Viewport();
-        let editorCamera = new fudge.ComponentCamera();
-        editorCamera.pivot.translateZ(5);
-        editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
-        Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-        editorGraph.addChild(new Platform_Editor.BaseNode());
-        editorGraph.addChild(new Platform_Editor.Enemy());
+        initializeEditorViewport();
         Platform_Editor.editorViewport.draw();
         // tslint:disable-next-line: no-unused-expression
         new Platform_Editor.ViewportControl(cameraZ);
@@ -52,10 +53,17 @@ var Platform_Editor;
     }
     function serializeGraph() {
         fudge.Serializer.registerNamespace(Platform_Editor);
-        let serialization = fudge.Serializer.serialize(graph);
-        let json = fudge.Serializer.stringify(serialization);
+        let serializedGraph = fudge.Serializer.serialize(graph);
+        let json = fudge.Serializer.stringify(serializedGraph);
+        let serializedResources = fudge.ResourceManager.serialize();
+        let resourceString = fudge.Serializer.stringify(serializedResources); // JSON.stringify(resources);
+        let serialization = new Platform_Editor.Serialization();
+        serialization.graph = serializedGraph;
+        serialization.resources = serializedResources;
+        let finalJson = JSON.stringify(serialization, null, 2);
+        console.log(resourceString);
         console.log(json);
-        save(json, "text.json");
+        save(finalJson, "text.json");
     }
     function save(_content, _filename) {
         let blob = new Blob([_content], { type: "text/plain" });
@@ -69,6 +77,23 @@ var Platform_Editor;
         downloader.click();
         document.body.removeChild(downloader);
         window.URL.revokeObjectURL(url);
+    }
+    function initializeEditorViewport() {
+        const editorCanvas = document.querySelector("#editor_canvas");
+        let editorGraph = new fudge.Node("Editor Graph");
+        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
+        Platform_Editor.editorViewport = new fudge.Viewport();
+        let editorCamera = new fudge.ComponentCamera();
+        editorCamera.pivot.translateZ(5);
+        editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
+        Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
+        let baseNode = new Platform_Editor.BaseNode();
+        baseNode.initialize();
+        let enemy = new Platform_Editor.Enemy();
+        enemy.initialize();
+        editorGraph.addChild(baseNode);
+        editorGraph.addChild(enemy);
     }
     // function event(): void {
     //     let node: fudge.Node = new fudge.Node("node");
@@ -90,7 +115,7 @@ var Platform_Editor;
         //private states: Array<fudge.Node> = new Array<fudge.Node>();
         constructor(cameraZ) {
             this.pickSceneNode = (_event) => {
-                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.viewport);
+                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.viewport, Platform_Editor.viewport.getGraph().getChildrenByName("PickableNodes")[0].getChildren());
                 if (pickedNodes) {
                     this.selectedNode = pickedNodes[0];
                 }
@@ -100,10 +125,15 @@ var Platform_Editor;
                 if (this.selectedNode) {
                     let cmpMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
                     cmpMaterial.clrPrimary = fudge.Color.CSS("red");
-                    let rayEnd = this.convertClientToRay(posMouse);
+                    let rayEnd = this.getRayEnd(posMouse);
                     let cmpTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
                     cmpTransform.local.translation = rayEnd;
                     Platform_Editor.viewport.draw();
+                    let cmpMesh = this.selectedNode.getComponent(fudge.ComponentMesh);
+                    let ray = Platform_Editor.viewport.getRayFromClient(posMouse);
+                    console.log("verts: " + cmpMesh.mesh.vertices);
+                    console.log("model" + this.selectedNode.mtxLocal);
+                    console.log("ray" + ray.intersectPlane(this.selectedNode.mtxLocal.translation, new fudge.Vector3(0, 0, 1)));
                 }
             };
             this.releaseNode = (_event) => {
@@ -115,7 +145,7 @@ var Platform_Editor;
                 }
             };
             this.pickEditorNode = (_event) => {
-                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.editorViewport);
+                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.editorViewport, Platform_Editor.editorViewport.getGraph().getChildren());
                 // maybe think of some logic to find the most senseful item (z-index?)
                 for (let node of pickedNodes) {
                     this.convertToMainViewport(node);
@@ -128,8 +158,8 @@ var Platform_Editor;
                             pickableNode = new Platform_Editor.BaseNode();
                             break;
                     }
+                    pickableNode.initialize();
                     Platform_Editor.editorViewport.getGraph().addChild(pickableNode);
-                    // node.constructor.apply(node.create());
                 }
                 Platform_Editor.viewport.draw();
                 Platform_Editor.editorViewport.draw();
@@ -157,10 +187,9 @@ var Platform_Editor;
         convertToMainViewport(selectedNode) {
             Platform_Editor.editorViewport.getGraph().removeChild(selectedNode);
             selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Editor.viewport.camera.pivot.translation.x, Platform_Editor.viewport.camera.pivot.translation.y, 0);
-            Platform_Editor.viewport.getGraph().addChild(selectedNode);
+            Platform_Editor.viewport.getGraph().getChildrenByName("PickableNodes")[0].addChild(selectedNode);
         }
-        // might do the same thing as getRayFromClient
-        convertClientToRay(_mousepos) {
+        getRayEnd(_mousepos) {
             let posProjection = Platform_Editor.viewport.pointClientToProjection(_mousepos);
             let ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
             let camera = Platform_Editor.viewport.camera;
@@ -171,16 +200,20 @@ var Platform_Editor;
             let rayEnd = fudge.Vector3.SUM(ray.origin, ray.direction);
             return rayEnd;
         }
-        pickNodes(x, y, usedViewport) {
+        pickNodes(x, y, usedViewport, nodes) {
             let posMouse = new fudge.Vector2(x, y);
-            let nodes = usedViewport.getGraph().getChildren();
+            let ray = usedViewport.getRayFromClient(posMouse);
             let picked = [];
             for (let node of nodes) {
-                let cmpPicker = node.getComponent(Platform_Editor.ComponentPicker);
-                let pickData = cmpPicker.pick(posMouse, usedViewport);
-                if (pickData) {
+                let translation = node.mtxLocal.translation;
+                let intersection = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
+                let verts = node.getComponent(fudge.ComponentMesh).mesh.vertices;
+                let maxX = translation.x + verts[6];
+                let minX = translation.x + verts[0];
+                let maxY = translation.y + verts[1];
+                let minY = translation.y + verts[4];
+                if (intersection.x > minX && intersection.x < maxX && intersection.y > minY && intersection.y < maxY) {
                     picked.push(node);
-                    console.log(pickData);
                 }
             }
             return picked;
@@ -191,10 +224,28 @@ var Platform_Editor;
 var Platform_Editor;
 (function (Platform_Editor) {
     var fudge = FudgeCore;
+    class Enemy extends Platform_Editor.PickableNode {
+        constructor() {
+            super("Enemy");
+        }
+        initialize() {
+            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
+            this.addComponent(cmpMesh);
+            let cmpMaterial = new fudge.ComponentMaterial(Enemy.material);
+            cmpMaterial.clrPrimary = fudge.Color.CSS("Red");
+            this.addComponent(cmpMaterial);
+        }
+    }
+    Enemy.material = new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored());
+    Platform_Editor.Enemy = Enemy;
+})(Platform_Editor || (Platform_Editor = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
+    var fudge = FudgeCore;
     class PickableNode extends fudge.Node {
         constructor(name) {
             super(name);
-            this.addComponent(new Platform_Editor.ComponentPicker());
         }
     }
     Platform_Editor.PickableNode = PickableNode;
@@ -207,6 +258,11 @@ var Platform_Editor;
     class BaseNode extends Platform_Editor.PickableNode {
         constructor() {
             super("BaseNode");
+<<<<<<< Updated upstream
+=======
+        }
+        initialize() {
+>>>>>>> Stashed changes
             let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
             this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
@@ -221,6 +277,7 @@ var Platform_Editor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
+<<<<<<< Updated upstream
     var fudge = FudgeCore;
     class ComponentPicker extends fudge.Component {
         constructor(_radius = 0.5) {
@@ -257,25 +314,11 @@ var Platform_Editor;
             let posRadius = currentViewport.pointClipToClient(projectionRadius.toVector2());
             return { clip: projection, canvas: posClient, radius: fudge.Vector2.DIFFERENCE(posRadius, posClient) };
         }
+=======
+    class Serialization {
+>>>>>>> Stashed changes
     }
-    Platform_Editor.ComponentPicker = ComponentPicker;
-})(Platform_Editor || (Platform_Editor = {}));
-var Platform_Editor;
-(function (Platform_Editor) {
-    var fudge = FudgeCore;
-    class Enemy extends Platform_Editor.PickableNode {
-        constructor() {
-            super("Enemy");
-            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
-            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
-            this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(Enemy.material);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("Red");
-            this.addComponent(cmpMaterial);
-        }
-    }
-    Enemy.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
-    Platform_Editor.Enemy = Enemy;
+    Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
 var Platform_Editor;

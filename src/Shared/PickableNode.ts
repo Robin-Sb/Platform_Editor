@@ -3,7 +3,8 @@ namespace Platform_Editor {
     export abstract class PickableNode extends fudge.Node {
         constructor(name: string) {
             super(name);
-            this.addComponent(new ComponentPicker());
         }
+
+        public abstract initialize(): void;
     }
 }
