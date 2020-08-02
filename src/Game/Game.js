@@ -110,4 +110,32 @@ var Platform_Editor;
     Enemy.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
     Platform_Editor.Enemy = Enemy;
 })(Platform_Editor || (Platform_Editor = {}));
+///<reference path="./PickableNode.ts" />
+var Platform_Editor;
+///<reference path="./PickableNode.ts" />
+(function (Platform_Editor) {
+    var fudge = FudgeCore;
+    class BaseNode extends Platform_Editor.PickableNode {
+        constructor() {
+            super("BaseNode");
+        }
+        initialize() {
+            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
+            this.addComponent(cmpTransform);
+            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
+            this.addComponent(cmpMesh);
+            let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
+            cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
+            this.addComponent(cmpMaterial);
+        }
+    }
+    BaseNode.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
+    Platform_Editor.BaseNode = BaseNode;
+})(Platform_Editor || (Platform_Editor = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
+    class Serialization {
+    }
+    Platform_Editor.Serialization = Serialization;
+})(Platform_Editor || (Platform_Editor = {}));
 //# sourceMappingURL=Game.js.map
