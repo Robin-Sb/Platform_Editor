@@ -258,21 +258,7 @@ var Platform_Editor;
     class BaseNode extends Platform_Editor.PickableNode {
         constructor() {
             super("BaseNode");
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-        }
         initialize() {
->>>>>>> Stashed changes
-=======
-        }
-        initialize() {
->>>>>>> Stashed changes
-=======
-        }
-        initialize() {
->>>>>>> Stashed changes
             let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
             this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
@@ -287,9 +273,6 @@ var Platform_Editor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     var fudge = FudgeCore;
     class ComponentPicker extends fudge.Component {
         constructor(_radius = 0.5) {
@@ -326,9 +309,7 @@ var Platform_Editor;
             let posRadius = currentViewport.pointClipToClient(projectionRadius.toVector2());
             return { clip: projection, canvas: posClient, radius: fudge.Vector2.DIFFERENCE(posRadius, posClient) };
         }
-=======
     class Serialization {
->>>>>>> Stashed changes
     }
     Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
@@ -359,15 +340,16 @@ var Platform_Editor;
     class Serialization {
     }
     Platform_Editor.Serialization = Serialization;
-=======
+
     class Serialization {
     }
     Platform_Editor.Serialization = Serialization;
->>>>>>> Stashed changes
-=======
+
     class Serialization {
     }
     Platform_Editor.Serialization = Serialization;
->>>>>>> Stashed changes
+    class Serialization {
+    }
+    Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
 //# sourceMappingURL=crun.js.map
