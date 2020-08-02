@@ -42,11 +42,11 @@ namespace Platform_Editor {
         private convertToMainViewport(selectedNode: fudge.Node): void {
             editorViewport.getGraph().removeChild(selectedNode);
             selectedNode.mtxLocal.translation = new fudge.Vector3(viewport.camera.pivot.translation.x, viewport.camera.pivot.translation.y, 0); 
-            viewport.getGraph().addChild(selectedNode);
+            viewport.getGraph().getChildrenByName("PickableNodes")[0].addChild(selectedNode);
         }
     
         private pickSceneNode = (_event: fudge.EventPointer): void => {
-            let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, viewport);
+            let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, viewport, <PickableNode[]> viewport.getGraph().getChildrenByName("PickableNodes")[0].getChildren());
     
             if (pickedNodes) {
                 this.selectedNode = pickedNodes[0];
@@ -58,11 +58,18 @@ namespace Platform_Editor {
             if (this.selectedNode) {
                 let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
                 cmpMaterial.clrPrimary = fudge.Color.CSS("red");
-    
-                let rayEnd: fudge.Vector3 = this.convertClientToRay(posMouse);
+
+
+                let rayEnd: fudge.Vector3 = this.getRayEnd(posMouse);
                 let cmpTransform: fudge.ComponentTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
                 cmpTransform.local.translation = rayEnd;
                 viewport.draw();
+
+                let cmpMesh: fudge.ComponentMesh = this.selectedNode.getComponent(fudge.ComponentMesh);
+                let ray: fudge.Ray = viewport.getRayFromClient(posMouse);
+                console.log("verts: " + cmpMesh.mesh.vertices);
+                console.log("model" + this.selectedNode.mtxLocal);
+                console.log("ray" + ray.intersectPlane(this.selectedNode.mtxLocal.translation, new fudge.Vector3(0, 0, 1)));
             }
         }
     
@@ -76,8 +83,7 @@ namespace Platform_Editor {
             }
         }
     
-        // might do the same thing as getRayFromClient
-        private convertClientToRay(_mousepos: fudge.Vector2): fudge.Vector3 {
+        private getRayEnd(_mousepos: fudge.Vector2): fudge.Vector3 {
             let posProjection: fudge.Vector2 = viewport.pointClientToProjection(_mousepos);
             let ray: fudge.Ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
             let camera: fudge.ComponentCamera = viewport.camera;
@@ -92,7 +98,7 @@ namespace Platform_Editor {
         }
     
         private pickEditorNode = (_event: fudge.EventPointer): void => {
-            let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, editorViewport);
+            let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, editorViewport, <PickableNode[]> editorViewport.getGraph().getChildren());
             // maybe think of some logic to find the most senseful item (z-index?)
             for (let node of pickedNodes) {
                 this.convertToMainViewport(node);
@@ -103,12 +109,12 @@ namespace Platform_Editor {
                     case Enemy: 
                         pickableNode = new Enemy();
                         break;
-                    case BaseNode: 
-                        pickableNode = new BaseNode();
+                    case Floor: 
+                        pickableNode = new Floor();
                         break;
                 }
+                pickableNode.initialize();
                 editorViewport.getGraph().addChild(pickableNode);
-                // node.constructor.apply(node.create());
             }
             
             viewport.draw();
@@ -116,16 +122,21 @@ namespace Platform_Editor {
         }
 
     
-        private pickNodes(x: number, y: number, usedViewport: fudge.Viewport): PickableNode[] {
+        private pickNodes(x: number, y: number, usedViewport: fudge.Viewport, nodes: PickableNode[]): PickableNode[] {
             let posMouse: fudge.Vector2 = new fudge.Vector2(x, y);
-            let nodes: PickableNode[] = <PickableNode[]> usedViewport.getGraph().getChildren();
+            let ray: fudge.Ray = usedViewport.getRayFromClient(posMouse);
             let picked: PickableNode[] = [];
             for (let node of nodes) {
-                let cmpPicker: ComponentPicker = node.getComponent(ComponentPicker);
-                let pickData: PickData = cmpPicker.pick(posMouse, usedViewport);
-                if (pickData) {
+                let translation: fudge.Vector3 = node.mtxLocal.translation;
+                let intersection: fudge.Vector3 = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
+                let verts: Float32Array = node.getComponent(fudge.ComponentMesh).mesh.vertices;
+                let maxX: number = translation.x + verts[6];
+                let minX: number = translation.x + verts[0];
+                let maxY: number = translation.y + verts[1];
+                let minY: number = translation.y + verts[4];
+
+                if (intersection.x > minX && intersection.x < maxX && intersection.y > minY && intersection.y < maxY) {
                     picked.push(node);
-                    console.log(pickData);
                 }
             } 
             

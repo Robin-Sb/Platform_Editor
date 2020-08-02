@@ -42,7 +42,8 @@ var Platform_Editor;
     class BaseNode extends Platform_Editor.PickableNode {
         constructor() {
             super("BaseNode");
-            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0))));
+            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
+            this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
             let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
@@ -61,6 +62,7 @@ var Platform_Editor;
             super();
             this.radius = 0.5;
             this.radius = _radius;
+            this.singleton = false;
         }
         drawPickRadius(_viewport) {
             let pickData = this.getPickData(_viewport);
@@ -115,22 +117,22 @@ var Platform_Editor;
 ///<reference path="./PickableNode.ts" />
 (function (Platform_Editor) {
     var fudge = FudgeCore;
-    class BaseNode extends Platform_Editor.PickableNode {
+    class Floor extends Platform_Editor.PickableNode {
         constructor() {
-            super("BaseNode");
+            super("Floor");
         }
         initialize() {
             let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
             this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
+            let cmpMaterial = new fudge.ComponentMaterial(Floor.material);
             cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
             this.addComponent(cmpMaterial);
         }
     }
-    BaseNode.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
-    Platform_Editor.BaseNode = BaseNode;
+    Floor.material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());
+    Platform_Editor.Floor = Floor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
