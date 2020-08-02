@@ -155,6 +155,7 @@ var Platform_Editor;
 var Platform_Editor;
 (function (Platform_Editor) {
     class Serialization {
+<<<<<<< Updated upstream
     }
     Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
@@ -184,6 +185,9 @@ var Platform_Editor;
 (function (Platform_Editor) {
     class Serialization {
     }
+=======
+    }
+>>>>>>> Stashed changes
     Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
 //# sourceMappingURL=Game.js.map

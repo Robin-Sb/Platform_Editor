@@ -259,6 +259,11 @@ var Platform_Editor;
         constructor() {
             super("BaseNode");
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        }
+        initialize() {
+>>>>>>> Stashed changes
 =======
         }
         initialize() {
@@ -277,6 +282,7 @@ var Platform_Editor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     var fudge = FudgeCore;
     class ComponentPicker extends fudge.Component {
@@ -347,5 +353,10 @@ var Platform_Editor;
     class Serialization {
     }
     Platform_Editor.Serialization = Serialization;
+=======
+    class Serialization {
+    }
+    Platform_Editor.Serialization = Serialization;
+>>>>>>> Stashed changes
 })(Platform_Editor || (Platform_Editor = {}));
 //# sourceMappingURL=crun.js.map

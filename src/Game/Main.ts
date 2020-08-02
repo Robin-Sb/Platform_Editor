@@ -8,9 +8,7 @@ namespace Platform_Game {
 
     function gameLoad(): void {
         document.querySelector("#file-input").addEventListener("change", readSingleFile, false);
-<<<<<<< Updated upstream
         const canvas: HTMLCanvasElement = document.querySelector("canvas");
-=======
     }
 
     function initialize(graph: fudge.Node): void {
@@ -27,8 +25,6 @@ namespace Platform_Game {
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
         viewport.draw();
-
->>>>>>> Stashed changes
     }
 
     function readSingleFile(event: any): void {

@@ -114,11 +114,7 @@ namespace Platform_Editor {
         editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
 
         editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-<<<<<<< Updated upstream
         let baseNode: Floor = new Floor();
-=======
-        let baseNode: BaseNode = new BaseNode();
->>>>>>> Stashed changes
         baseNode.initialize();
         let enemy: Enemy = new Enemy();
         enemy.initialize();
