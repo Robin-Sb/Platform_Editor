@@ -156,6 +156,7 @@ var Platform_Editor;
 (function (Platform_Editor) {
     class Serialization {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     }
     Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
@@ -185,6 +186,9 @@ var Platform_Editor;
 (function (Platform_Editor) {
     class Serialization {
     }
+=======
+    }
+>>>>>>> Stashed changes
 =======
     }
 >>>>>>> Stashed changes

@@ -260,6 +260,11 @@ var Platform_Editor;
             super("BaseNode");
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        }
+        initialize() {
+>>>>>>> Stashed changes
 =======
         }
         initialize() {
@@ -282,6 +287,7 @@ var Platform_Editor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     var fudge = FudgeCore;
@@ -353,6 +359,11 @@ var Platform_Editor;
     class Serialization {
     }
     Platform_Editor.Serialization = Serialization;
+=======
+    class Serialization {
+    }
+    Platform_Editor.Serialization = Serialization;
+>>>>>>> Stashed changes
 =======
     class Serialization {
     }
