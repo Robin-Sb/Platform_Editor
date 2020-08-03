@@ -19,11 +19,10 @@ var Platform_Editor;
         cmpCamera.pivot.lookAt(fudge.Vector3.ZERO());
         cmpCamera.backgroundColor = fudge.Color.CSS("LightSkyBlue");
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
-        let startTile = new fudge.Node("Start");
+        let startTile = new Platform_Editor.Floor(false);
         startTile.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
         let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
         startTile.addComponent(cmpMesh);
-        graph.addChild(new fudge.Node("PickableNodes"));
         let cmpMaterial = new fudge.ComponentMaterial(new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored()));
         cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
         startTile.addComponent(cmpMaterial);
@@ -88,7 +87,7 @@ var Platform_Editor;
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
         editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
         Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-        let baseNode = new Platform_Editor.BaseNode();
+        let baseNode = new Platform_Editor.Floor();
         baseNode.initialize();
         let enemy = new Platform_Editor.Enemy();
         enemy.initialize();
@@ -115,7 +114,7 @@ var Platform_Editor;
         //private states: Array<fudge.Node> = new Array<fudge.Node>();
         constructor(cameraZ) {
             this.pickSceneNode = (_event) => {
-                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.viewport, Platform_Editor.viewport.getGraph().getChildrenByName("PickableNodes")[0].getChildren());
+                let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.viewport, Platform_Editor.viewport.getGraph().getChildren());
                 if (pickedNodes) {
                     this.selectedNode = pickedNodes[0];
                 }
@@ -154,8 +153,8 @@ var Platform_Editor;
                         case Platform_Editor.Enemy:
                             pickableNode = new Platform_Editor.Enemy();
                             break;
-                        case Platform_Editor.BaseNode:
-                            pickableNode = new Platform_Editor.BaseNode();
+                        case Platform_Editor.Floor:
+                            pickableNode = new Platform_Editor.Floor();
                             break;
                     }
                     pickableNode.initialize();
@@ -187,7 +186,7 @@ var Platform_Editor;
         convertToMainViewport(selectedNode) {
             Platform_Editor.editorViewport.getGraph().removeChild(selectedNode);
             selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Editor.viewport.camera.pivot.translation.x, Platform_Editor.viewport.camera.pivot.translation.y, 0);
-            Platform_Editor.viewport.getGraph().getChildrenByName("PickableNodes")[0].addChild(selectedNode);
+            Platform_Editor.viewport.getGraph().addChild(selectedNode);
         }
         getRayEnd(_mousepos) {
             let posProjection = Platform_Editor.viewport.pointClientToProjection(_mousepos);
@@ -205,16 +204,26 @@ var Platform_Editor;
             let ray = usedViewport.getRayFromClient(posMouse);
             let picked = [];
             for (let node of nodes) {
+                if (node instanceof Platform_Editor.Floor) {
+                    if (!node.isPickable) {
+                        continue;
+                    }
+                }
                 let translation = node.mtxLocal.translation;
                 let intersection = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
-                let verts = node.getComponent(fudge.ComponentMesh).mesh.vertices;
-                let maxX = translation.x + verts[6];
-                let minX = translation.x + verts[0];
-                let maxY = translation.y + verts[1];
-                let minY = translation.y + verts[4];
-                if (intersection.x > minX && intersection.x < maxX && intersection.y > minY && intersection.y < maxY) {
+                if (node.getRectWorld().isInside(intersection.toVector2())) {
                     picked.push(node);
                 }
+                // let translation: fudge.Vector3 = node.mtxLocal.translation;
+                // let intersection: fudge.Vector3 = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
+                // let verts: Float32Array = node.getComponent(fudge.ComponentMesh).mesh.vertices;
+                // let maxX: number = translation.x + verts[6];
+                // let minX: number = translation.x + verts[0];
+                // let maxY: number = translation.y + verts[1];
+                // let minY: number = translation.y + verts[4];
+                // if (intersection.x > minX && intersection.x < maxX && intersection.y > minY && intersection.y < maxY) {
+                //     picked.push(node);
+                // }
             }
             return picked;
         }
@@ -222,6 +231,31 @@ var Platform_Editor;
     Platform_Editor.ViewportControl = ViewportControl;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
+(function (Platform_Editor) {
+    var fudge = FudgeCore;
+    class PickableNode extends fudge.Node {
+        constructor(name) {
+            super(name);
+        }
+        getRectWorld() {
+            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
+            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
+            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
+            //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
+            //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
+            topleft.transform(this.mtxWorld, true);
+            bottomright.transform(this.mtxWorld, true);
+            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            rect.position = topleft.toVector2();
+            rect.size = size;
+            return rect;
+        }
+    }
+    Platform_Editor.PickableNode = PickableNode;
+})(Platform_Editor || (Platform_Editor = {}));
+///<reference path="./PickableNode.ts" />
+var Platform_Editor;
+///<reference path="./PickableNode.ts" />
 (function (Platform_Editor) {
     var fudge = FudgeCore;
     class Enemy extends Platform_Editor.PickableNode {
@@ -240,114 +274,38 @@ var Platform_Editor;
     Enemy.material = new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored());
     Platform_Editor.Enemy = Enemy;
 })(Platform_Editor || (Platform_Editor = {}));
-var Platform_Editor;
-(function (Platform_Editor) {
-    var fudge = FudgeCore;
-    class PickableNode extends fudge.Node {
-        constructor(name) {
-            super(name);
-        }
-    }
-    Platform_Editor.PickableNode = PickableNode;
-})(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
 var Platform_Editor;
 ///<reference path="./PickableNode.ts" />
 (function (Platform_Editor) {
     var fudge = FudgeCore;
-    class BaseNode extends Platform_Editor.PickableNode {
-        constructor() {
-            super("BaseNode");
-        initialize() {
-            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
-            this.addComponent(cmpTransform);
-            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
-            this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
-            this.addComponent(cmpMaterial);
+    class Floor extends Platform_Editor.PickableNode {
+        constructor(isPickable = true) {
+            super("Floor");
+            this._isPickable = true;
+            if (!isPickable) {
+                this._isPickable = false;
+            }
         }
-    }
-    BaseNode.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
-    Platform_Editor.BaseNode = BaseNode;
-})(Platform_Editor || (Platform_Editor = {}));
-var Platform_Editor;
-(function (Platform_Editor) {
-    var fudge = FudgeCore;
-    class ComponentPicker extends fudge.Component {
-        constructor(_radius = 0.5) {
-            super();
-            this.radius = 0.5;
-            this.radius = _radius;
-            this.singleton = false;
-        }
-        drawPickRadius(_viewport) {
-            let pickData = this.getPickData(_viewport);
-            let crc2 = _viewport.getContext();
-            crc2.save();
-            crc2.beginPath();
-            crc2.arc(pickData.canvas.x, pickData.canvas.y, pickData.radius.magnitude, 0, 2 * Math.PI);
-            crc2.strokeStyle = "#000000";
-            crc2.fillStyle = "#ffffff80";
-            crc2.stroke();
-            crc2.fill();
-        }
-        pick(_client, viewport) {
-            let pickData = this.getPickData(viewport);
-            let distance = fudge.Vector2.DIFFERENCE(_client, pickData.canvas);
-            if (distance.magnitudeSquared < pickData.radius.magnitudeSquared)
-                return pickData;
-            return null;
-        }
-        getPickData(currentViewport) {
-            let node = this.getContainer();
-            let projection = currentViewport.camera.project(node.mtxWorld.translation);
-            let posClient = currentViewport.pointClipToClient(projection.toVector2());
-            let projectionRadius = fudge.Vector3.X(this.radius * node.mtxWorld.scaling.magnitude); // / 1.414);
-            projectionRadius.transform(currentViewport.camera.pivot, false);
-            projectionRadius = currentViewport.camera.project(fudge.Vector3.SUM(node.mtxWorld.translation, projectionRadius));
-            let posRadius = currentViewport.pointClipToClient(projectionRadius.toVector2());
-            return { clip: projection, canvas: posClient, radius: fudge.Vector2.DIFFERENCE(posRadius, posClient) };
-        }
-    class Serialization {
-    }
-    Platform_Editor.Serialization = Serialization;
-})(Platform_Editor || (Platform_Editor = {}));
-///<reference path="./PickableNode.ts" />
-var Platform_Editor;
-///<reference path="./PickableNode.ts" />
-(function (Platform_Editor) {
-    var fudge = FudgeCore;
-    class BaseNode extends Platform_Editor.PickableNode {
-        constructor() {
-            super("BaseNode");
+        get isPickable() {
+            return this._isPickable;
         }
         initialize() {
             let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
             this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(BaseNode.material);
+            let cmpMaterial = new fudge.ComponentMaterial(Floor.material);
             cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
             this.addComponent(cmpMaterial);
         }
     }
-    BaseNode.material = new fudge.Material("BaseMtr", fudge.ShaderFlat, new fudge.CoatColored());
-    Platform_Editor.BaseNode = BaseNode;
+    Floor.material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());
+    Floor.pivot = ƒ.Matrix4x4.TRANSLATION(ƒ.Vector3.Y(-0.5));
+    Platform_Editor.Floor = Floor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
-    class Serialization {
-    }
-    Platform_Editor.Serialization = Serialization;
-
-    class Serialization {
-    }
-    Platform_Editor.Serialization = Serialization;
-
-    class Serialization {
-    }
-    Platform_Editor.Serialization = Serialization;
     class Serialization {
     }
     Platform_Editor.Serialization = Serialization;

@@ -28,8 +28,8 @@
             "components": {},
             "children": [
               {
-                "Platform_Editor.BaseNode": {
-                  "name": "BaseNode",
+                "Platform_Editor.Floor": {
+                  "name": "Floor",
                   "components": {
                     "ComponentTransform": [
                       {

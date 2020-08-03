@@ -2,7 +2,7 @@ namespace Platform_Game {
 
     import fudge = FudgeCore;
     import fudgeAid = FudgeAid;
-  
+
     export enum ACTION {
       IDLE = "Idle",
       WALK = "Walk",
@@ -24,54 +24,88 @@ namespace Platform_Game {
             super(_name);
             this.addComponent(new fudge.ComponentTransform());
             this.show(ACTION.IDLE);
-            this.generateSprite();
+            this.cmpTransform.local.translateZ(0.1); 
             fudge.Loop.addEventListener(fudge.EVENT.LOOP_FRAME, this.update);
         }
 
-        public generateSprite(): void {
-            let walkImg: HTMLImageElement = new Image();
-            walkImg.src = "../../assets/Owlet_Monster/Owlet_Monster_Walk_6.png";
-            let walkSheet: fudge.CoatTextured = fudgeAid.createSpriteSheet("Walk", walkImg);
-
+        public static generateSprite(): void {
+            let walkImg: HTMLImageElement = document.querySelector("#player_walk");
             Player.animations = {};
-            let sprite: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation(ACTION.WALK, walkSheet);
-            sprite.generateByGrid(ƒ.Rectangle.GET(0, 0, 32, 32), 6, ƒ.Vector2.ZERO(), 64, ƒ.ORIGIN2D.BOTTOMCENTER);
-            Player.animations[ACTION.WALK] = sprite;
+            Player.appendSprite(walkImg, ACTION.WALK, 6);
+
+            let idleImg: HTMLImageElement = document.querySelector("#player_idle");
+            let sprite: fudgeAid.SpriteSheetAnimation = Player.appendSprite(idleImg, ACTION.IDLE, 4);
+            sprite.frames[2].timeScale = 10;            
+            // let idleSheet: fudge.CoatTextured = fudgeAid.createSpriteSheet("Walk", idleImg);
+
+            // sprite = new fudgeAid.SpriteSheetAnimation(ACTION.IDLE, idleSheet);
+            // sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            // Player.animations[ACTION.IDLE] = sprite;
+            
         }
+
+        private static appendSprite(image: HTMLImageElement, action: ACTION, frames: number): fudgeAid.SpriteSheetAnimation {
+            let spritesheet: fudge.CoatTextured = fudgeAid.createSpriteSheet("Player", image);
+
+            let sprite: fudgeAid.SpriteSheetAnimation = new fudgeAid.SpriteSheetAnimation(ACTION.WALK, spritesheet);
+            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), frames, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            Player.animations[action] = sprite;
+            return sprite;
+        }
+
+        public act(_action: ACTION, _direction?: DIRECTION): void {
+            switch (_action) {
+              case ACTION.IDLE:
+                this.speed.x = 0;
+                break;
+              case ACTION.WALK:
+                let direction: number = (_direction == DIRECTION.RIGHT ? 1 : -1);
+                this.speed.x = Player.speedMax.x; // * direction;
+                this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
+                break;
+              case ACTION.JUMP:
+                this.speed.y = 2;
+                break;
+            }
+            if (_action == this.action)
+              return;
+      
+            this.action = _action;
+            this.show(_action);
+        }
+
 
         public show(_action: ACTION): void {
-            // show only the animation defined for the action
+            //show only the animation defined for the action
             if (_action == ACTION.JUMP)
-              return;
+               return;
             this.setAnimation(<fudgeAid.SpriteSheetAnimation> Player.animations[_action]);
         }
-      
 
-
-        private update = (_event: ƒ.Eventƒ): void => {
-            let timeFrame: number = ƒ.Loop.timeFrameGame / 1000;
+        private update = (_event: fudge.Eventƒ): void => {
+            let timeFrame: number = fudge.Loop.timeFrameGame / 500;
             this.speed.y += Player.gravity.y * timeFrame;
-            let distance: ƒ.Vector3 = ƒ.Vector3.SCALE(this.speed, timeFrame);
+            let distance: fudge.Vector3 = fudge.Vector3.SCALE(this.speed, timeFrame);
             this.cmpTransform.local.translate(distance);
       
             this.checkCollision();
-          }
-            
+        }
 
-
-          private checkCollision(): void {
-            for (let floor of viewport.getGraph().getChildrenByName("PickableNodes")[0].getChildren()) {
-              let rect: ƒ.Rectangle = (<Platform_Editor.Floor> floor).getRectWorld();
-              let hit: boolean = rect.isInside(this.cmpTransform.local.translation.toVector2());
-              if (hit) {
-                let translation: ƒ.Vector3 = this.cmpTransform.local.translation;
-                translation.y = rect.y;
-                this.cmpTransform.local.translation = translation;
-                this.speed.y = 0;
-              }
+        private checkCollision(): void {
+            let nodes: fudge.Node[] = viewport.getGraph().getChildren();
+            for (let floor of nodes) {
+                if (!(floor instanceof Platform_Editor.Floor))
+                    continue;
+                
+                let rect: fudge.Rectangle = (<Platform_Editor.Floor> floor).getRectWorld();
+                let hit: boolean = rect.isInside(this.cmpTransform.local.translation.toVector2());
+                if (hit) {
+                    let translation: fudge.Vector3 = this.cmpTransform.local.translation;
+                    translation.y = rect.y;
+                    this.cmpTransform.local.translation = translation;
+                    this.speed.y = 0;
+                }
             }
-          }
-      
-
+        }
     }
 }

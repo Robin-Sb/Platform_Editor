@@ -42,11 +42,11 @@ namespace Platform_Editor {
         private convertToMainViewport(selectedNode: fudge.Node): void {
             editorViewport.getGraph().removeChild(selectedNode);
             selectedNode.mtxLocal.translation = new fudge.Vector3(viewport.camera.pivot.translation.x, viewport.camera.pivot.translation.y, 0); 
-            viewport.getGraph().getChildrenByName("PickableNodes")[0].addChild(selectedNode);
+            viewport.getGraph().addChild(selectedNode);
         }
     
         private pickSceneNode = (_event: fudge.EventPointer): void => {
-            let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, viewport, <PickableNode[]> viewport.getGraph().getChildrenByName("PickableNodes")[0].getChildren());
+            let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, viewport, <PickableNode[]> viewport.getGraph().getChildren());
     
             if (pickedNodes) {
                 this.selectedNode = pickedNodes[0];
@@ -127,17 +127,30 @@ namespace Platform_Editor {
             let ray: fudge.Ray = usedViewport.getRayFromClient(posMouse);
             let picked: PickableNode[] = [];
             for (let node of nodes) {
+                if (node instanceof Floor) {
+                    if (!(<Floor> node).isPickable) {
+                        continue;
+                    }
+                }
+
                 let translation: fudge.Vector3 = node.mtxLocal.translation;
                 let intersection: fudge.Vector3 = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
-                let verts: Float32Array = node.getComponent(fudge.ComponentMesh).mesh.vertices;
-                let maxX: number = translation.x + verts[6];
-                let minX: number = translation.x + verts[0];
-                let maxY: number = translation.y + verts[1];
-                let minY: number = translation.y + verts[4];
 
-                if (intersection.x > minX && intersection.x < maxX && intersection.y > minY && intersection.y < maxY) {
+                if (node.getRectWorld().isInside(intersection.toVector2())) {
                     picked.push(node);
                 }
+
+                // let translation: fudge.Vector3 = node.mtxLocal.translation;
+                // let intersection: fudge.Vector3 = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
+                // let verts: Float32Array = node.getComponent(fudge.ComponentMesh).mesh.vertices;
+                // let maxX: number = translation.x + verts[6];
+                // let minX: number = translation.x + verts[0];
+                // let maxY: number = translation.y + verts[1];
+                // let minY: number = translation.y + verts[4];
+
+                // if (intersection.x > minX && intersection.x < maxX && intersection.y > minY && intersection.y < maxY) {
+                //     picked.push(node);
+                // }
             } 
             
             return picked;

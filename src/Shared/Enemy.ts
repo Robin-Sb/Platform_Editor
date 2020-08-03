@@ -1,3 +1,5 @@
+///<reference path="./PickableNode.ts" />
+
 namespace Platform_Editor {
     import fudge = FudgeCore;
 

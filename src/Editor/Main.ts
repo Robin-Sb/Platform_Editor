@@ -27,14 +27,12 @@ namespace Platform_Editor {
 
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
 
-        let startTile: fudge.Node = new fudge.Node("Start");
+        let startTile: Floor = new Floor(false);
         startTile.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
       
         let cmpMesh: fudge.ComponentMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
         startTile.addComponent(cmpMesh);
 
-        graph.addChild(new fudge.Node("PickableNodes"));
-  
         let cmpMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored()));
         cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
         startTile.addComponent(cmpMaterial);
@@ -114,11 +112,7 @@ namespace Platform_Editor {
         editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
 
         editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-<<<<<<< Updated upstream
         let baseNode: Floor = new Floor();
-=======
-        let baseNode: BaseNode = new BaseNode();
->>>>>>> Stashed changes
         baseNode.initialize();
         let enemy: Enemy = new Enemy();
         enemy.initialize();
