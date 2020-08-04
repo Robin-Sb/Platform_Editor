@@ -62,7 +62,7 @@ var Platform_Editor;
         let finalJson = JSON.stringify(serialization, null, 2);
         console.log(resourceString);
         console.log(json);
-        save(finalJson, "text.json");
+        save(finalJson, "game.json");
     }
     function save(_content, _filename) {
         let blob = new Blob([_content], { type: "text/plain" });
@@ -85,7 +85,7 @@ var Platform_Editor;
         let editorCamera = new fudge.ComponentCamera();
         editorCamera.pivot.translateZ(5);
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.8);
         Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
         let baseNode = new Platform_Editor.Floor();
         baseNode.initialize();
@@ -138,7 +138,13 @@ var Platform_Editor;
             this.releaseNode = (_event) => {
                 if (this.selectedNode) {
                     let cmpMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                    cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
+                    cmpMaterial.clrPrimary = this.selectedNode.color;
+                    if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.CTRL_LEFT])) {
+                        let translation = this.selectedNode.mtxLocal.translation;
+                        translation.x = Math.round(translation.x * 10) / 10;
+                        translation.y = Math.round(translation.y * 10) / 10;
+                        this.selectedNode.mtxLocal.translation = new fudge.Vector3(translation.x, translation.y, 0);
+                    }
                     this.selectedNode = null;
                     Platform_Editor.viewport.draw();
                 }
@@ -230,48 +236,66 @@ var Platform_Editor;
     }
     Platform_Editor.ViewportControl = ViewportControl;
 })(Platform_Editor || (Platform_Editor = {}));
+var Platform_Game;
+(function (Platform_Game) {
+    let ACTION;
+    (function (ACTION) {
+        ACTION["IDLE"] = "Idle";
+        ACTION["WALK"] = "Walk";
+        ACTION["JUMP"] = "Jump";
+    })(ACTION = Platform_Game.ACTION || (Platform_Game.ACTION = {}));
+})(Platform_Game || (Platform_Game = {}));
+///<reference path="./PickableNode.ts" />
 var Platform_Editor;
+///<reference path="./PickableNode.ts" />
 (function (Platform_Editor) {
     var fudge = FudgeCore;
-    class PickableNode extends fudge.Node {
-        constructor(name) {
-            super(name);
+    var fudgeAid = FudgeAid;
+    class Enemy extends fudgeAid.NodeSprite {
+        constructor() {
+            super("Enemy");
         }
         getRectWorld() {
             let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
             let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
             let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
-            //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
-            topleft.transform(this.mtxWorld, true);
-            bottomright.transform(this.mtxWorld, true);
+            let pivot = this.getComponent(ƒ.ComponentMesh).pivot;
+            let mtxResult = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
+            topleft.transform(mtxResult, true);
+            bottomright.transform(mtxResult, true);
             let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
             rect.position = topleft.toVector2();
             rect.size = size;
             return rect;
         }
-    }
-    Platform_Editor.PickableNode = PickableNode;
-})(Platform_Editor || (Platform_Editor = {}));
-///<reference path="./PickableNode.ts" />
-var Platform_Editor;
-///<reference path="./PickableNode.ts" />
-(function (Platform_Editor) {
-    var fudge = FudgeCore;
-    class Enemy extends Platform_Editor.PickableNode {
-        constructor() {
-            super("Enemy");
-        }
         initialize() {
             this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
-            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
-            this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(Enemy.material);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("Red");
-            this.addComponent(cmpMaterial);
+            let img = document.querySelector("#enemy_idle");
+            let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
+            Enemy.animations = {};
+            let sprite = new fudgeAid.SpriteSheetAnimation("Idle", spritesheet);
+            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            Enemy.animations[Platform_Game.ACTION.IDLE] = sprite;
+            this.setAnimation(Enemy.animations[Platform_Game.ACTION.IDLE]);
+            this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
+        }
+        serialize() {
+            let serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation
+            };
+            return serialization;
+        }
+        deserialize(_serialization) {
+            this.initialize();
+            this.name = _serialization.name;
+            this.mtxLocal.translation = new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0);
+            this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
+            return this;
         }
     }
     Enemy.material = new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored());
+    Enemy.pivot = ƒ.Matrix4x4.TRANSLATION(ƒ.Vector3.Y(0.5));
     Platform_Editor.Enemy = Enemy;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
@@ -279,7 +303,7 @@ var Platform_Editor;
 ///<reference path="./PickableNode.ts" />
 (function (Platform_Editor) {
     var fudge = FudgeCore;
-    class Floor extends Platform_Editor.PickableNode {
+    class Floor extends fudge.Node {
         constructor(isPickable = true) {
             super("Floor");
             this._isPickable = true;
@@ -296,8 +320,22 @@ var Platform_Editor;
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
             let cmpMaterial = new fudge.ComponentMaterial(Floor.material);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
+            this.color = fudge.Color.CSS("LimeGreen");
+            cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);
+        }
+        getRectWorld() {
+            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
+            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
+            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
+            //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
+            //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
+            topleft.transform(this.mtxWorld, true);
+            bottomright.transform(this.mtxWorld, true);
+            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            rect.position = topleft.toVector2();
+            rect.size = size;
+            return rect;
         }
     }
     Floor.material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());

@@ -62,19 +62,13 @@ var Platform_Game;
 (function (Platform_Game) {
     var fudge = FudgeCore;
     var fudgeAid = FudgeAid;
-    let ACTION;
-    (function (ACTION) {
-        ACTION["IDLE"] = "Idle";
-        ACTION["WALK"] = "Walk";
-        ACTION["JUMP"] = "Jump";
-    })(ACTION = Platform_Game.ACTION || (Platform_Game.ACTION = {}));
     let DIRECTION;
     (function (DIRECTION) {
         DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
         DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
     })(DIRECTION = Platform_Game.DIRECTION || (Platform_Game.DIRECTION = {}));
     class Player extends fudgeAid.NodeSprite {
-        constructor(_name = "Hare") {
+        constructor(_name = "Player") {
             super(_name);
             this.speed = fudge.Vector3.ZERO();
             this.update = (_event) => {
@@ -85,16 +79,16 @@ var Platform_Game;
                 this.checkCollision();
             };
             this.addComponent(new fudge.ComponentTransform());
-            this.show(ACTION.IDLE);
+            this.show(Platform_Game.ACTION.IDLE);
             this.cmpTransform.local.translateZ(0.1);
             fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
         }
         static generateSprite() {
             let walkImg = document.querySelector("#player_walk");
             Player.animations = {};
-            Player.appendSprite(walkImg, ACTION.WALK, 6);
+            Player.appendSprite(walkImg, Platform_Game.ACTION.WALK, 6);
             let idleImg = document.querySelector("#player_idle");
-            let sprite = Player.appendSprite(idleImg, ACTION.IDLE, 4);
+            let sprite = Player.appendSprite(idleImg, Platform_Game.ACTION.IDLE, 4);
             sprite.frames[2].timeScale = 10;
             // let idleSheet: fudge.CoatTextured = fudgeAid.createSpriteSheet("Walk", idleImg);
             // sprite = new fudgeAid.SpriteSheetAnimation(ACTION.IDLE, idleSheet);
@@ -103,22 +97,22 @@ var Platform_Game;
         }
         static appendSprite(image, action, frames) {
             let spritesheet = fudgeAid.createSpriteSheet("Player", image);
-            let sprite = new fudgeAid.SpriteSheetAnimation(ACTION.WALK, spritesheet);
+            let sprite = new fudgeAid.SpriteSheetAnimation(Platform_Game.ACTION.WALK, spritesheet);
             sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), frames, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
             Player.animations[action] = sprite;
             return sprite;
         }
         act(_action, _direction) {
             switch (_action) {
-                case ACTION.IDLE:
+                case Platform_Game.ACTION.IDLE:
                     this.speed.x = 0;
                     break;
-                case ACTION.WALK:
+                case Platform_Game.ACTION.WALK:
                     let direction = (_direction == DIRECTION.RIGHT ? 1 : -1);
                     this.speed.x = Player.speedMax.x; // * direction;
                     this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
                     break;
-                case ACTION.JUMP:
+                case Platform_Game.ACTION.JUMP:
                     this.speed.y = 2;
                     break;
             }
@@ -129,7 +123,7 @@ var Platform_Game;
         }
         show(_action) {
             //show only the animation defined for the action
-            if (_action == ACTION.JUMP)
+            if (_action == Platform_Game.ACTION.JUMP)
                 return;
             this.setAnimation(Player.animations[_action]);
         }
@@ -153,48 +147,66 @@ var Platform_Game;
     Player.gravity = fudge.Vector2.Y(-3);
     Platform_Game.Player = Player;
 })(Platform_Game || (Platform_Game = {}));
+var Platform_Game;
+(function (Platform_Game) {
+    let ACTION;
+    (function (ACTION) {
+        ACTION["IDLE"] = "Idle";
+        ACTION["WALK"] = "Walk";
+        ACTION["JUMP"] = "Jump";
+    })(ACTION = Platform_Game.ACTION || (Platform_Game.ACTION = {}));
+})(Platform_Game || (Platform_Game = {}));
+///<reference path="./PickableNode.ts" />
 var Platform_Editor;
+///<reference path="./PickableNode.ts" />
 (function (Platform_Editor) {
     var fudge = FudgeCore;
-    class PickableNode extends fudge.Node {
-        constructor(name) {
-            super(name);
+    var fudgeAid = FudgeAid;
+    class Enemy extends fudgeAid.NodeSprite {
+        constructor() {
+            super("Enemy");
         }
         getRectWorld() {
             let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
             let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
             let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
-            //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
-            topleft.transform(this.mtxWorld, true);
-            bottomright.transform(this.mtxWorld, true);
+            let pivot = this.getComponent(ƒ.ComponentMesh).pivot;
+            let mtxResult = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
+            topleft.transform(mtxResult, true);
+            bottomright.transform(mtxResult, true);
             let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
             rect.position = topleft.toVector2();
             rect.size = size;
             return rect;
         }
-    }
-    Platform_Editor.PickableNode = PickableNode;
-})(Platform_Editor || (Platform_Editor = {}));
-///<reference path="./PickableNode.ts" />
-var Platform_Editor;
-///<reference path="./PickableNode.ts" />
-(function (Platform_Editor) {
-    var fudge = FudgeCore;
-    class Enemy extends Platform_Editor.PickableNode {
-        constructor() {
-            super("Enemy");
-        }
         initialize() {
             this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
-            let cmpMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
-            this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(Enemy.material);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("Red");
-            this.addComponent(cmpMaterial);
+            let img = document.querySelector("#enemy_idle");
+            let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
+            Enemy.animations = {};
+            let sprite = new fudgeAid.SpriteSheetAnimation("Idle", spritesheet);
+            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            Enemy.animations[Platform_Game.ACTION.IDLE] = sprite;
+            this.setAnimation(Enemy.animations[Platform_Game.ACTION.IDLE]);
+            this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
+        }
+        serialize() {
+            let serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation
+            };
+            return serialization;
+        }
+        deserialize(_serialization) {
+            this.initialize();
+            this.name = _serialization.name;
+            this.mtxLocal.translation = new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0);
+            this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
+            return this;
         }
     }
     Enemy.material = new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored());
+    Enemy.pivot = ƒ.Matrix4x4.TRANSLATION(ƒ.Vector3.Y(0.5));
     Platform_Editor.Enemy = Enemy;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
@@ -202,7 +214,7 @@ var Platform_Editor;
 ///<reference path="./PickableNode.ts" />
 (function (Platform_Editor) {
     var fudge = FudgeCore;
-    class Floor extends Platform_Editor.PickableNode {
+    class Floor extends fudge.Node {
         constructor(isPickable = true) {
             super("Floor");
             this._isPickable = true;
@@ -219,8 +231,22 @@ var Platform_Editor;
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
             let cmpMaterial = new fudge.ComponentMaterial(Floor.material);
-            cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
+            this.color = fudge.Color.CSS("LimeGreen");
+            cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);
+        }
+        getRectWorld() {
+            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
+            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
+            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
+            //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
+            //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
+            topleft.transform(this.mtxWorld, true);
+            bottomright.transform(this.mtxWorld, true);
+            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            rect.position = topleft.toVector2();
+            rect.size = size;
+            return rect;
         }
     }
     Floor.material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());

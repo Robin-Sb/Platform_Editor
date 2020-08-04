@@ -82,7 +82,7 @@ namespace Platform_Editor {
         let finalJson: string = JSON.stringify(serialization, null, 2);
         console.log(resourceString);
         console.log(json);
-        save(finalJson, "text.json");
+        save(finalJson, "game.json");
     }
 
     function save(_content: string, _filename: string): void {
@@ -109,7 +109,7 @@ namespace Platform_Editor {
         let editorCamera: fudge.ComponentCamera = new fudge.ComponentCamera();
         editorCamera.pivot.translateZ(5);
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.8);
 
         editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
         let baseNode: Floor = new Floor();

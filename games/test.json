@@ -23,89 +23,8 @@
       },
       "children": [
         {
-          "ƒ.Node": {
-            "name": "PickableNodes",
-            "components": {},
-            "children": [
-              {
-                "Platform_Editor.Floor": {
-                  "name": "Floor",
-                  "components": {
-                    "ComponentTransform": [
-                      {
-                        "ƒ.ComponentTransform": {
-                          "local": {
-                            "translation": {
-                              "x": 2.213749885559082,
-                              "y": -0.2253711223602295,
-                              "z": 0
-                            },
-                            "rotation": {
-                              "x": 0,
-                              "y": 0,
-                              "z": 0
-                            },
-                            "scaling": {
-                              "x": 1,
-                              "y": 1,
-                              "z": 1
-                            }
-                          },
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ],
-                    "ComponentMesh": [
-                      {
-                        "ƒ.ComponentMesh": {
-                          "mesh": {
-                            "ƒ.MeshQuad": {}
-                          },
-                          "pivot": {
-                            "translation": {
-                              "x": 0,
-                              "y": 0,
-                              "z": 0
-                            },
-                            "rotation": {
-                              "x": 0,
-                              "y": 0,
-                              "z": 0
-                            },
-                            "scaling": {
-                              "x": 1,
-                              "y": 1,
-                              "z": 1
-                            }
-                          },
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ],
-                    "ComponentMaterial": [
-                      {
-                        "ƒ.ComponentMaterial": {
-                          "idMaterial": "Material|2020-08-02T16:28:36.710Z|45665",
-                          "Component": {
-                            "active": true
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  "children": []
-                }
-              }
-            ]
-          }
-        },
-        {
-          "ƒ.Node": {
-            "name": "Start",
+          "Platform_Editor.Floor": {
+            "name": "Floor",
             "components": {
               "ComponentTransform": [
                 {
@@ -165,7 +84,7 @@
               "ComponentMaterial": [
                 {
                   "ƒ.ComponentMaterial": {
-                    "idMaterial": "Material|2020-08-02T16:28:36.738Z|92439",
+                    "idMaterial": "Material|2020-08-04T12:07:11.232Z|92430",
                     "Component": {
                       "active": true
                     }
@@ -175,15 +94,27 @@
             },
             "children": []
           }
+        },
+        {
+          "Platform_Editor.Enemy": {
+            "name": "Enemy",
+            "translation": {
+              "data": {
+                "0": -0.343707799911499,
+                "1": 1.1172974109649658,
+                "2": 0
+              }
+            }
+          }
         }
       ]
     }
   },
   "resources": {
-    "Material|2020-08-02T16:28:36.710Z|45665": {
+    "Material|2020-08-04T12:07:11.186Z|57819": {
       "ƒ.Material": {
-        "name": "BaseMtr",
-        "idResource": "Material|2020-08-02T16:28:36.710Z|45665",
+        "name": "EnemyMtr",
+        "idResource": "Material|2020-08-04T12:07:11.186Z|57819",
         "shader": "ShaderFlat",
         "coat": {
           "ƒ.CoatColored": {
@@ -198,10 +129,10 @@
         }
       }
     },
-    "Material|2020-08-02T16:28:36.710Z|87924": {
+    "Material|2020-08-04T12:07:11.186Z|64429": {
       "ƒ.Material": {
-        "name": "EnemyMtr",
-        "idResource": "Material|2020-08-02T16:28:36.710Z|87924",
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-04T12:07:11.186Z|64429",
         "shader": "ShaderFlat",
         "coat": {
           "ƒ.CoatColored": {
@@ -216,10 +147,10 @@
         }
       }
     },
-    "Material|2020-08-02T16:28:36.738Z|92439": {
+    "Material|2020-08-04T12:07:11.232Z|92430": {
       "ƒ.Material": {
         "name": "EnemyMtr",
-        "idResource": "Material|2020-08-02T16:28:36.738Z|92439",
+        "idResource": "Material|2020-08-04T12:07:11.232Z|92430",
         "shader": "ShaderFlat",
         "coat": {
           "ƒ.CoatColored": {
@@ -230,6 +161,44 @@
               "b": 0.5,
               "a": 1
             }
+          }
+        }
+      }
+    },
+    "Material|2020-08-04T12:07:11.241Z|50516": {
+      "ƒ.Material": {
+        "name": "Enemy",
+        "idResource": "Material|2020-08-04T12:07:11.241Z|50516",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Enemy",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-04T12:07:12.672Z|57801": {
+      "ƒ.Material": {
+        "name": "Enemy",
+        "idResource": "Material|2020-08-04T12:07:12.672Z|57801",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Enemy",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
           }
         }
       }

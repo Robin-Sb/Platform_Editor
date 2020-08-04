@@ -3,11 +3,6 @@ namespace Platform_Game {
     import fudge = FudgeCore;
     import fudgeAid = FudgeAid;
 
-    export enum ACTION {
-      IDLE = "Idle",
-      WALK = "Walk",
-      JUMP = "Jump"
-    }
   
     export enum DIRECTION {
       LEFT, RIGHT
@@ -20,7 +15,7 @@ namespace Platform_Game {
         public speed: fudge.Vector3 = fudge.Vector3.ZERO();
         private action: ACTION;
 
-        constructor(_name: string = "Hare") {
+        constructor(_name: string = "Player") {
             super(_name);
             this.addComponent(new fudge.ComponentTransform());
             this.show(ACTION.IDLE);

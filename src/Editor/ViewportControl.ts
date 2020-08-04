@@ -76,7 +76,13 @@ namespace Platform_Editor {
         private releaseNode = (_event: fudge.EventPointer): void => {
             if (this.selectedNode) {
                 let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
+                cmpMaterial.clrPrimary = this.selectedNode.color;
+                if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.CTRL_LEFT])) {
+                    let translation: fudge.Vector3 = this.selectedNode.mtxLocal.translation;
+                    translation.x = Math.round(translation.x * 10) / 10;
+                    translation.y = Math.round(translation.y * 10) / 10;   
+                    this.selectedNode.mtxLocal.translation = new fudge.Vector3(translation.x, translation.y, 0);
+                }
     
                 this.selectedNode = null;
                 viewport.draw();
