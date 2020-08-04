@@ -85,12 +85,13 @@ namespace Platform_Game {
       
             this.checkCollision();
 
-            if (this.mtxLocal.translation.y < Parameters.lowestTile - 5) {
+            console.log(lowestTile);
+            if (this.mtxLocal.translation.y < lowestTile - 5) {
                 alert("You lost!");
                 fudge.Loop.stop();
             }
             let endPoleX: number = viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
-            if (Parameters.isRightSided) {
+            if (isRightSided) {
                 if (this.mtxLocal.translation.x > endPoleX) {
                     alert("You won!");
                     fudge.Loop.stop();

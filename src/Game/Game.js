@@ -5,6 +5,9 @@ var Platform_Game;
     var fudgeAid = FudgeAid;
     window.addEventListener("load", gameLoad);
     let player;
+    let cameraZ = 10;
+    Platform_Game.lowestTile = Number.MAX_VALUE;
+    Platform_Game.isRightSided = true;
     function gameLoad() {
         document.querySelector("#file-input").addEventListener("change", readSingleFile, false);
     }
@@ -13,19 +16,19 @@ var Platform_Game;
         button.parentNode.removeChild(button);
         const canvas = document.querySelector("canvas");
         let cmpCamera = new fudge.ComponentCamera();
-        cmpCamera.pivot.translateZ(10);
+        cmpCamera.pivot.translateZ(cameraZ);
         cmpCamera.pivot.lookAt(fudge.Vector3.ZERO());
         cmpCamera.backgroundColor = fudge.Color.CSS("LightSkyBlue");
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
         Platform_Game.viewport = new fudge.Viewport();
         Platform_Game.viewport.initialize("Viewport", graph, cmpCamera, canvas);
         if (graph.getChildrenByName("EndPole")[0].mtxLocal.translation.x < 0) {
-            Platform_Game.Parameters.isRightSided = false;
+            Platform_Game.isRightSided = false;
         }
         for (let floor of graph.getChildrenByName("Floor")) {
             let tileY = floor.mtxLocal.translation.y;
-            if (tileY < Platform_Game.Parameters.lowestTile)
-                Platform_Game.Parameters.lowestTile = tileY;
+            if (tileY < Platform_Game.lowestTile)
+                Platform_Game.lowestTile = tileY;
         }
         Platform_Game.Player.generateSprite();
         player = new Platform_Game.Player();
@@ -36,7 +39,11 @@ var Platform_Game;
     }
     function update() {
         processInput();
+        moveCamera();
         Platform_Game.viewport.draw();
+    }
+    function moveCamera() {
+        Platform_Game.viewport.camera.pivot.translation = new fudge.Vector3(player.mtxLocal.translation.x, player.mtxLocal.translation.y, cameraZ);
     }
     function processInput() {
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.A, fudge.KEYBOARD_CODE.ARROW_LEFT]))
@@ -87,12 +94,13 @@ var Platform_Game;
                 let distance = fudge.Vector3.SCALE(this.speed, timeFrame);
                 this.cmpTransform.local.translate(distance);
                 this.checkCollision();
-                if (this.mtxLocal.translation.y < Platform_Game.Parameters.lowestTile - 5) {
+                console.log(Platform_Game.lowestTile);
+                if (this.mtxLocal.translation.y < Platform_Game.lowestTile - 5) {
                     alert("You lost!");
                     fudge.Loop.stop();
                 }
                 let endPoleX = Platform_Game.viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
-                if (Platform_Game.Parameters.isRightSided) {
+                if (Platform_Game.isRightSided) {
                     if (this.mtxLocal.translation.x > endPoleX) {
                         alert("You won!");
                         fudge.Loop.stop();
@@ -190,14 +198,6 @@ var Platform_Game;
     Player.speedMax = new fudge.Vector2(1.5, 5); // units per second
     Player.gravity = fudge.Vector2.Y(-3);
     Platform_Game.Player = Player;
-})(Platform_Game || (Platform_Game = {}));
-var Platform_Game;
-(function (Platform_Game) {
-    class Parameters {
-    }
-    Parameters.isRightSided = true;
-    Parameters.lowestTile = Number.MAX_VALUE;
-    Platform_Game.Parameters = Parameters;
 })(Platform_Game || (Platform_Game = {}));
 var Platform_Game;
 (function (Platform_Game) {

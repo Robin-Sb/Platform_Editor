@@ -51,6 +51,10 @@ var Platform_Editor;
         oldY = _event.canvasY;
     }
     function serializeGraph() {
+        if (!graph.getChildrenByName("EndPole")) {
+            alert("The endpole must be set!");
+            return;
+        }
         fudge.Serializer.registerNamespace(Platform_Editor);
         let serializedGraph = fudge.Serializer.serialize(graph);
         let json = fudge.Serializer.stringify(serializedGraph);

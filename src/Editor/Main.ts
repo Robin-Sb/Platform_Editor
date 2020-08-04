@@ -71,6 +71,10 @@ namespace Platform_Editor {
     }
 
     function serializeGraph(): void {
+        if (!graph.getChildrenByName("EndPole")) {
+            alert("The endpole must be set!");
+            return;
+        }
         fudge.Serializer.registerNamespace(Platform_Editor);
         let serializedGraph: fudge.Serialization = fudge.Serializer.serialize(graph);
         let json: string = fudge.Serializer.stringify(serializedGraph);
