@@ -56,8 +56,8 @@ namespace Platform_Editor {
         private dragNode = (_event: fudge.EventPointer): void => {
             let posMouse: fudge.Vector2 = new fudge.Vector2(_event.canvasX, _event.canvasY);
             if (this.selectedNode) {
-                let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                cmpMaterial.clrPrimary = fudge.Color.CSS("red");
+                // let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
+                // cmpMaterial.clrPrimary = fudge.Color.CSS("red");
 
 
                 let rayEnd: fudge.Vector3 = this.getRayEnd(posMouse);
@@ -76,7 +76,7 @@ namespace Platform_Editor {
         private releaseNode = (_event: fudge.EventPointer): void => {
             if (this.selectedNode) {
                 let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                cmpMaterial.clrPrimary = this.selectedNode.color;
+                //cmpMaterial.clrPrimary = this.selectedNode.color;
                 if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.CTRL_LEFT])) {
                     let translation: fudge.Vector3 = this.selectedNode.mtxLocal.translation;
                     translation.x = Math.round(translation.x * 10) / 10;
@@ -111,6 +111,7 @@ namespace Platform_Editor {
 
                 let pickableNode: PickableNode;
 
+                let matched: boolean = true;
                 switch (node.constructor) {
                     case Enemy: 
                         pickableNode = new Enemy();
@@ -118,9 +119,12 @@ namespace Platform_Editor {
                     case Floor: 
                         pickableNode = new Floor();
                         break;
+                    default: matched = false;
                 }
-                pickableNode.initialize();
-                editorViewport.getGraph().addChild(pickableNode);
+                if (matched) {
+                    pickableNode.initialize();
+                    editorViewport.getGraph().addChild(pickableNode);
+                }
             }
             
             viewport.draw();
@@ -139,12 +143,15 @@ namespace Platform_Editor {
                     }
                 }
 
-                let translation: fudge.Vector3 = node.mtxLocal.translation;
-                let intersection: fudge.Vector3 = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
+                //let translation: fudge.Vector3 = node.mtxLocal.translation;
+                let intersection: fudge.Vector3 = ray.intersectPlane(new fudge.Vector3(1, 1, 0), new fudge.Vector3(0, 0, 1));
 
-                if (node.getRectWorld().isInside(intersection.toVector2())) {
-                    picked.push(node);
+                for (let rect of node.getRectWorld()) {
+                    if (rect.isInside(intersection.toVector2())) {
+                        picked.push(node);
+                    }    
                 }
+ 
 
                 // let translation: fudge.Vector3 = node.mtxLocal.translation;
                 // let intersection: fudge.Vector3 = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));

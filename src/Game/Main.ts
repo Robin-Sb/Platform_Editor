@@ -12,6 +12,9 @@ namespace Platform_Game {
     }
 
     function initialize(graph: fudge.Node): void {
+        let button: HTMLButtonElement = document.querySelector("#file-input");
+        button.parentNode.removeChild(button);
+
         const canvas: HTMLCanvasElement = document.querySelector("canvas");
 
         let cmpCamera: fudge.ComponentCamera = new fudge.ComponentCamera();
@@ -24,6 +27,15 @@ namespace Platform_Game {
         viewport = new fudge.Viewport();
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
+        if (graph.getChildrenByName("EndPole")[0].mtxLocal.translation.x < 0) {
+            Parameters.isRightSided = false;
+        }
+
+        for (let floor of graph.getChildrenByName("Floor")) {
+            let tileY: number = floor.mtxLocal.translation.y;
+            if (tileY < Parameters.lowestTile) 
+                Parameters.lowestTile = tileY;
+        }
 
         Player.generateSprite();
 
@@ -35,7 +47,7 @@ namespace Platform_Game {
         fudge.Loop.start(fudge.LOOP_MODE.TIME_GAME, 60);
     }
 
-    function update(event: fudge.Eventƒ): void {
+    function update(): void {
         processInput();
         viewport.draw();
     }

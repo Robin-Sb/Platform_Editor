@@ -3,6 +3,6 @@ namespace Platform_Editor {
     export interface PickableNode extends fudge.Node {
         color: fudge.Color;
         initialize(): void;
-        getRectWorld(): ƒ.Rectangle;
+        getRectWorld(): ƒ.Rectangle[];
     }
 }

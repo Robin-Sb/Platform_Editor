@@ -9,6 +9,8 @@ var Platform_Game;
         document.querySelector("#file-input").addEventListener("change", readSingleFile, false);
     }
     function initialize(graph) {
+        let button = document.querySelector("#file-input");
+        button.parentNode.removeChild(button);
         const canvas = document.querySelector("canvas");
         let cmpCamera = new fudge.ComponentCamera();
         cmpCamera.pivot.translateZ(10);
@@ -17,6 +19,14 @@ var Platform_Game;
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
         Platform_Game.viewport = new fudge.Viewport();
         Platform_Game.viewport.initialize("Viewport", graph, cmpCamera, canvas);
+        if (graph.getChildrenByName("EndPole")[0].mtxLocal.translation.x < 0) {
+            Platform_Game.Parameters.isRightSided = false;
+        }
+        for (let floor of graph.getChildrenByName("Floor")) {
+            let tileY = floor.mtxLocal.translation.y;
+            if (tileY < Platform_Game.Parameters.lowestTile)
+                Platform_Game.Parameters.lowestTile = tileY;
+        }
         Platform_Game.Player.generateSprite();
         player = new Platform_Game.Player();
         Platform_Game.viewport.getGraph().addChild(player);
@@ -24,7 +34,7 @@ var Platform_Game;
         fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         fudge.Loop.start(fudge.LOOP_MODE.TIME_GAME, 60);
     }
-    function update(event) {
+    function update() {
         processInput();
         Platform_Game.viewport.draw();
     }
@@ -77,6 +87,24 @@ var Platform_Game;
                 let distance = fudge.Vector3.SCALE(this.speed, timeFrame);
                 this.cmpTransform.local.translate(distance);
                 this.checkCollision();
+                if (this.mtxLocal.translation.y < Platform_Game.Parameters.lowestTile - 5) {
+                    alert("You lost!");
+                    fudge.Loop.stop();
+                }
+                let endPoleX = Platform_Game.viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
+                if (Platform_Game.Parameters.isRightSided) {
+                    if (this.mtxLocal.translation.x > endPoleX) {
+                        alert("You won!");
+                        fudge.Loop.stop();
+                    }
+                }
+                else {
+                    if (this.mtxLocal.translation.x < endPoleX) {
+                        alert("You won!");
+                        fudge.Loop.stop();
+                    }
+                }
+                this.checkEnemyCollision();
             };
             this.addComponent(new fudge.ComponentTransform());
             this.show(Platform_Game.ACTION.IDLE);
@@ -128,17 +156,33 @@ var Platform_Game;
             this.setAnimation(Player.animations[_action]);
         }
         checkCollision() {
-            let nodes = Platform_Game.viewport.getGraph().getChildren();
+            let nodes = Platform_Game.viewport.getGraph().getChildrenByName("Floor");
             for (let floor of nodes) {
-                if (!(floor instanceof Platform_Editor.Floor))
-                    continue;
-                let rect = floor.getRectWorld();
+                let rect = floor.getRectWorld()[0];
                 let hit = rect.isInside(this.cmpTransform.local.translation.toVector2());
                 if (hit) {
                     let translation = this.cmpTransform.local.translation;
                     translation.y = rect.y;
                     this.cmpTransform.local.translation = translation;
                     this.speed.y = 0;
+                }
+            }
+        }
+        checkEnemyCollision() {
+            let nodes = Platform_Game.viewport.getGraph().getChildrenByName("Enemy");
+            for (let enemy of nodes) {
+                let rect = enemy.getRectWorld()[0];
+                let pivot = this.cmpTransform.local.translation.toVector2();
+                pivot.y = pivot.y + this.cmpTransform.local.scaling.y / 2;
+                let hit = rect.isInside(pivot);
+                if (hit) {
+                    if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
+                        Platform_Game.viewport.getGraph().removeChild(enemy);
+                    }
+                    else {
+                        alert("You lost!");
+                        fudge.Loop.stop();
+                    }
                 }
             }
         }
@@ -149,6 +193,14 @@ var Platform_Game;
 })(Platform_Game || (Platform_Game = {}));
 var Platform_Game;
 (function (Platform_Game) {
+    class Parameters {
+    }
+    Parameters.isRightSided = true;
+    Parameters.lowestTile = Number.MAX_VALUE;
+    Platform_Game.Parameters = Parameters;
+})(Platform_Game || (Platform_Game = {}));
+var Platform_Game;
+(function (Platform_Game) {
     let ACTION;
     (function (ACTION) {
         ACTION["IDLE"] = "Idle";
@@ -156,6 +208,60 @@ var Platform_Game;
         ACTION["JUMP"] = "Jump";
     })(ACTION = Platform_Game.ACTION || (Platform_Game.ACTION = {}));
 })(Platform_Game || (Platform_Game = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
+    var fudge = FudgeCore;
+    class EndPole extends fudge.Node {
+        constructor() {
+            super("EndPole");
+        }
+        initialize() {
+            let base = new fudge.Node("Base");
+            let standardY = -2;
+            let sizeY = 2;
+            let baseTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 0, 0)));
+            base.addComponent(baseTransform);
+            let baseMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
+            base.addComponent(baseMesh);
+            base.mtxLocal.scale(new fudge.Vector3(0.5, sizeY, 0));
+            let baseMaterial = new fudge.ComponentMaterial(EndPole.material);
+            this.color = fudge.Color.CSS("LimeGreen");
+            baseMaterial.clrPrimary = this.color;
+            base.addComponent(baseMaterial);
+            let top = new fudge.Node("Top");
+            let topTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2 + 0.3, 0)));
+            top.addComponent(topTransform);
+            let topMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
+            top.addComponent(topMesh);
+            let topMaterial = new fudge.ComponentMaterial(EndPole.material);
+            this.color = fudge.Color.CSS("LimeGreen");
+            topMaterial.clrPrimary = this.color;
+            top.addComponent(topMaterial);
+            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(new fudge.Vector3(0, standardY, 0))));
+            this.addChild(base);
+            this.addChild(top);
+        }
+        getRectWorld() {
+            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
+            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
+            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
+            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
+            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
+            // topleft.transform(mtxResult, true);
+            // bottomright.transform(mtxResult, true);
+            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            // rect.position = topleft.toVector2();
+            // rect.size = size;
+            let rects = [];
+            for (let node of this.getChildren()) {
+                rects.push(Platform_Editor.Utils.getRectWorld(node));
+            }
+            return rects;
+        }
+    }
+    EndPole.material = new ƒ.Material("Tower", ƒ.ShaderFlat, new ƒ.CoatColored());
+    Platform_Editor.EndPole = EndPole;
+})(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
 var Platform_Editor;
 ///<reference path="./PickableNode.ts" />
@@ -167,17 +273,17 @@ var Platform_Editor;
             super("Enemy");
         }
         getRectWorld() {
-            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
-            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
-            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
-            let pivot = this.getComponent(ƒ.ComponentMesh).pivot;
-            let mtxResult = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
-            topleft.transform(mtxResult, true);
-            bottomright.transform(mtxResult, true);
-            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            rect.position = topleft.toVector2();
-            rect.size = size;
-            return rect;
+            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
+            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
+            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
+            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
+            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
+            // topleft.transform(mtxResult, true);
+            // bottomright.transform(mtxResult, true);
+            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            // rect.position = topleft.toVector2();
+            // rect.size = size;
+            return [Platform_Editor.Utils.getRectWorld(this)];
         }
         initialize() {
             this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
@@ -205,8 +311,6 @@ var Platform_Editor;
             return this;
         }
     }
-    Enemy.material = new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored());
-    Enemy.pivot = ƒ.Matrix4x4.TRANSLATION(ƒ.Vector3.Y(0.5));
     Platform_Editor.Enemy = Enemy;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
@@ -236,21 +340,20 @@ var Platform_Editor;
             this.addComponent(cmpMaterial);
         }
         getRectWorld() {
-            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
-            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
-            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
-            //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
-            topleft.transform(this.mtxWorld, true);
-            bottomright.transform(this.mtxWorld, true);
-            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            rect.position = topleft.toVector2();
-            rect.size = size;
-            return rect;
+            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
+            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
+            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
+            // //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
+            // //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
+            // topleft.transform(this.mtxWorld, true);
+            // bottomright.transform(this.mtxWorld, true);
+            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            // rect.position = topleft.toVector2();
+            // rect.size = size;
+            return [Platform_Editor.Utils.getRectWorld(this)];
         }
     }
     Floor.material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());
-    Floor.pivot = ƒ.Matrix4x4.TRANSLATION(ƒ.Vector3.Y(-0.5));
     Platform_Editor.Floor = Floor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
@@ -258,5 +361,24 @@ var Platform_Editor;
     class Serialization {
     }
     Platform_Editor.Serialization = Serialization;
+})(Platform_Editor || (Platform_Editor = {}));
+var Platform_Editor;
+(function (Platform_Editor) {
+    class Utils {
+        static getRectWorld(node) {
+            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
+            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
+            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
+            let pivot = node.getComponent(ƒ.ComponentMesh).pivot;
+            let mtxResult = ƒ.Matrix4x4.MULTIPLICATION(node.mtxWorld, pivot);
+            topleft.transform(mtxResult, true);
+            bottomright.transform(mtxResult, true);
+            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            rect.position = topleft.toVector2();
+            rect.size = size;
+            return rect;
+        }
+    }
+    Platform_Editor.Utils = Utils;
 })(Platform_Editor || (Platform_Editor = {}));
 //# sourceMappingURL=Game.js.map

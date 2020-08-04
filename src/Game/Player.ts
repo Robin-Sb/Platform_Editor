@@ -84,15 +84,30 @@ namespace Platform_Game {
             this.cmpTransform.local.translate(distance);
       
             this.checkCollision();
+
+            if (this.mtxLocal.translation.y < Parameters.lowestTile - 5) {
+                alert("You lost!");
+                fudge.Loop.stop();
+            }
+            let endPoleX: number = viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
+            if (Parameters.isRightSided) {
+                if (this.mtxLocal.translation.x > endPoleX) {
+                    alert("You won!");
+                    fudge.Loop.stop();
+                }
+            } else {
+                if (this.mtxLocal.translation.x < endPoleX) {
+                    alert("You won!");
+                    fudge.Loop.stop();
+                }
+            }
+            this.checkEnemyCollision();
         }
 
         private checkCollision(): void {
-            let nodes: fudge.Node[] = viewport.getGraph().getChildren();
-            for (let floor of nodes) {
-                if (!(floor instanceof Platform_Editor.Floor))
-                    continue;
-                
-                let rect: fudge.Rectangle = (<Platform_Editor.Floor> floor).getRectWorld();
+            let nodes: fudge.Node[] = viewport.getGraph().getChildrenByName("Floor");
+            for (let floor of nodes) {                
+                let rect: fudge.Rectangle = (<Platform_Editor.Floor> floor).getRectWorld()[0];
                 let hit: boolean = rect.isInside(this.cmpTransform.local.translation.toVector2());
                 if (hit) {
                     let translation: fudge.Vector3 = this.cmpTransform.local.translation;
@@ -102,5 +117,23 @@ namespace Platform_Game {
                 }
             }
         }
+
+       private checkEnemyCollision(): void {
+        let nodes: fudge.Node[] = viewport.getGraph().getChildrenByName("Enemy");
+        for (let enemy of nodes) {
+            let rect: fudge.Rectangle = (<Platform_Editor.Enemy> enemy).getRectWorld()[0]; 
+            let pivot: fudge.Vector2 = this.cmpTransform.local.translation.toVector2();
+            pivot.y = pivot.y + this.cmpTransform.local.scaling.y / 2;
+            let hit: boolean = rect.isInside(pivot);
+            if (hit) {
+                if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
+                    viewport.getGraph().removeChild(enemy);
+                } else {
+                    alert("You lost!");
+                    fudge.Loop.stop();
+                }
+            }
+        }
+       } 
     }
 }

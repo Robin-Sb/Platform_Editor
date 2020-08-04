@@ -116,8 +116,11 @@ namespace Platform_Editor {
         baseNode.initialize();
         let enemy: Enemy = new Enemy();
         enemy.initialize();
+        let endPole: EndPole = new EndPole();
+        endPole.initialize();
         editorGraph.addChild(baseNode);
         editorGraph.addChild(enemy);
+        editorGraph.addChild(endPole);
     }
 
     
