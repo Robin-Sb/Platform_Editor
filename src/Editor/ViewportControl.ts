@@ -20,6 +20,10 @@ namespace Platform_Editor {
             viewport.addEventListener(fudge.EVENT_POINTER.UP, this.releaseNode);
             viewport.activatePointerEvent(fudge.EVENT_POINTER.UP, true);
 
+            viewport.addEventListener(fudge.EVENT_KEYBOARD.DOWN, this.handleKeyboard.bind(this));
+            viewport.activateKeyboardEvent(ƒ.EVENT_KEYBOARD.DOWN, true);
+            viewport.setFocus(true);
+
             editorViewport.addEventListener(fudge.EVENT_POINTER.DOWN, this.pickEditorNode);
             editorViewport.activatePointerEvent(fudge.EVENT_POINTER.DOWN, true);
 
@@ -59,7 +63,6 @@ namespace Platform_Editor {
                 // let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
                 // cmpMaterial.clrPrimary = fudge.Color.CSS("red");
 
-
                 let rayEnd: fudge.Vector3 = this.getRayEnd(posMouse);
                 let cmpTransform: fudge.ComponentTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
                 cmpTransform.local.translation = new fudge.Vector3(rayEnd.x, rayEnd.y, 0.01);
@@ -80,6 +83,22 @@ namespace Platform_Editor {
     
                 this.selectedNode = null;
                 viewport.draw();
+            }
+        }
+
+        private handleKeyboard(_event: fudge.EventKeyboard): void {
+            if (_event.code == fudge.KEYBOARD_CODE.DELETE) {
+                if (this.selectedNode) {
+                    viewport.getGraph().removeChild(this.selectedNode);
+                    if (this.selectedNode.constructor == EndPole) {
+                        let newPole: EndPole = new EndPole();
+                        newPole.initialize();
+                        editorViewport.getGraph().addChild(newPole);
+                        editorViewport.draw();
+                    }
+                    this.selectedNode = null;
+                    viewport.draw();
+                }
             }
         }
     
@@ -145,19 +164,6 @@ namespace Platform_Editor {
                         picked.push(node);
                     }    
                 }
- 
-
-                // let translation: fudge.Vector3 = node.mtxLocal.translation;
-                // let intersection: fudge.Vector3 = ray.intersectPlane(translation, new fudge.Vector3(0, 0, 1));
-                // let verts: Float32Array = node.getComponent(fudge.ComponentMesh).mesh.vertices;
-                // let maxX: number = translation.x + verts[6];
-                // let minX: number = translation.x + verts[0];
-                // let maxY: number = translation.y + verts[1];
-                // let minY: number = translation.y + verts[4];
-
-                // if (intersection.x > minX && intersection.x < maxX && intersection.y > minY && intersection.y < maxY) {
-                //     picked.push(node);
-                // }
             } 
             
             return picked;
