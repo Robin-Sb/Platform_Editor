@@ -1,7 +1,6 @@
 namespace Platform_Editor {
     import fudge = FudgeCore;
     export class EndPole extends fudge.Node implements PickableNode {
-        private static material: ƒ.Material = new ƒ.Material("Tower", ƒ.ShaderFlat, new ƒ.CoatColored());
         color: fudge.Color;
 
         constructor() {

@@ -174,7 +174,9 @@ var Platform_Game;
                     this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
                     break;
                 case Platform_Game.ACTION.JUMP:
-                    this.speed.y = 2;
+                    if (this.speed.y == 0) {
+                        this.speed.y = 3;
+                    }
                     break;
             }
             if (_action == this.action)
@@ -289,7 +291,6 @@ var Platform_Editor;
             return this;
         }
     }
-    EndPole.material = new ƒ.Material("Tower", ƒ.ShaderFlat, new ƒ.CoatColored());
     Platform_Editor.EndPole = EndPole;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />

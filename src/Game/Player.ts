@@ -59,7 +59,9 @@ namespace Platform_Game {
                 this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
                 break;
               case ACTION.JUMP:
-                this.speed.y = 2;
+                if (this.speed.y == 0) {
+                    this.speed.y = 3;
+                } 
                 break;
             }
             if (_action == this.action)
@@ -89,7 +91,7 @@ namespace Platform_Game {
                 fudge.Loop.stop();
             }
             let endPoleX: number = viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
-            let hasWon = false;
+            let hasWon: boolean = false;
             if (isRightSided) {
                 if (this.mtxLocal.translation.x > endPoleX) {
                     hasWon = true;
