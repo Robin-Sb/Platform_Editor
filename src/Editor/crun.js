@@ -10,8 +10,8 @@ var Platform_Editor;
     function editorLoad(_event) {
         let cameraZ = 10;
         const canvas = document.querySelector("#scene_canvas");
-        const button = document.querySelector("#save_game");
-        button.addEventListener("click", serializeGraph);
+        //const button: HTMLButtonElement =  document.querySelector("#save_game");
+        //button.addEventListener("click", serializeGraph);
         oldX = canvas.width / 2;
         oldY = canvas.height / 2;
         let cmpCamera = new fudge.ComponentCamera();
@@ -83,13 +83,14 @@ var Platform_Editor;
     }
     function initializeEditorViewport() {
         const editorCanvas = document.querySelector("#editor_canvas");
+        editorCanvas.height = Platform_Editor.viewport.getCanvasRectangle().height;
         let editorGraph = new fudge.Node("Editor Graph");
         fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
         Platform_Editor.editorViewport = new fudge.Viewport();
         let editorCamera = new fudge.ComponentCamera();
         editorCamera.pivot.translateZ(5);
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.8);
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.2);
         Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
         let baseNode = new Platform_Editor.Floor();
         baseNode.initialize();

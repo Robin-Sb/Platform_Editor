@@ -14,8 +14,8 @@ namespace Platform_Editor {
     function editorLoad(_event: Event): void {
         let cameraZ: number = 10;
         const canvas: HTMLCanvasElement = document.querySelector("#scene_canvas");
-        const button: HTMLButtonElement =  document.querySelector("#save_game");
-        button.addEventListener("click", serializeGraph);
+        //const button: HTMLButtonElement =  document.querySelector("#save_game");
+        //button.addEventListener("click", serializeGraph);
         
         oldX = canvas.width / 2;
         oldY = canvas.height / 2;
@@ -105,6 +105,7 @@ namespace Platform_Editor {
 
     function initializeEditorViewport(): void {
         const editorCanvas: HTMLCanvasElement = document.querySelector("#editor_canvas");
+        editorCanvas.height = viewport.getCanvasRectangle().height;
         let editorGraph: fudge.Node = new fudge.Node("Editor Graph");
         fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
 
@@ -113,7 +114,7 @@ namespace Platform_Editor {
         let editorCamera: fudge.ComponentCamera = new fudge.ComponentCamera();
         editorCamera.pivot.translateZ(5);
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.8);
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.2);
 
         editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
         let baseNode: Floor = new Floor();
