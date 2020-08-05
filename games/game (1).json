@@ -1,0 +1,199 @@
+{
+  "graph": {
+    "ƒ.Node": {
+      "name": "graph",
+      "components": {
+        "ComponentLight": [
+          {
+            "ƒ.ComponentLight": {
+              "active": true
+            }
+          },
+          {
+            "ƒ.ComponentLight": {
+              "active": true
+            }
+          },
+          {
+            "ƒ.ComponentLight": {
+              "active": true
+            }
+          }
+        ]
+      },
+      "children": [
+        {
+          "Platform_Editor.Floor": {
+            "name": "Floor",
+            "translation": {
+              "data": {
+                "0": 0,
+                "1": 0,
+                "2": 0
+              }
+            },
+            "textureId": "#pavement_text"
+          }
+        },
+        {
+          "Platform_Editor.Enemy": {
+            "name": "Enemy",
+            "translation": {
+              "data": {
+                "0": -1.2660139799118042,
+                "1": 0.2868129312992096,
+                "2": 0.009999999776482582
+              }
+            }
+          }
+        },
+        {
+          "Platform_Editor.EndPole": {
+            "name": "EndPole",
+            "translation": {
+              "data": {
+                "0": 1.7937982082366943,
+                "1": 0.7276784181594849,
+                "2": 0.009999999776482582
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "resources": {
+    "Material|2020-08-05T16:43:29.089Z|61055": {
+      "ƒ.Material": {
+        "name": "Tower",
+        "idResource": "Material|2020-08-05T16:43:29.089Z|61055",
+        "shader": "ShaderFlat",
+        "coat": {
+          "ƒ.CoatColored": {
+            "name": "Coat",
+            "color": {
+              "r": 0.5,
+              "g": 0.5,
+              "b": 0.5,
+              "a": 1
+            }
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T16:43:29.323Z|30651": {
+      "ƒ.Material": {
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T16:43:29.323Z|30651",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T16:43:29.333Z|38011": {
+      "ƒ.Material": {
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T16:43:29.333Z|38011",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T16:43:29.334Z|10571": {
+      "ƒ.Material": {
+        "name": "Enemy",
+        "idResource": "Material|2020-08-05T16:43:29.334Z|10571",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Enemy",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T16:43:29.347Z|60711": {
+      "ƒ.Material": {
+        "name": "PoleMtr",
+        "idResource": "Material|2020-08-05T16:43:29.347Z|60711",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T16:43:29.354Z|88478": {
+      "ƒ.Material": {
+        "name": "PoleMtr",
+        "idResource": "Material|2020-08-05T16:43:29.354Z|88478",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T16:43:31.152Z|96020": {
+      "ƒ.Material": {
+        "name": "Enemy",
+        "idResource": "Material|2020-08-05T16:43:31.152Z|96020",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Enemy",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,14 +9,40 @@ namespace Platform_Game {
     let cameraZ: number = 10;
     export let lowestTile: number = Number.MAX_VALUE;
     export let isRightSided: boolean = true;
+    export let audioComponents:  Record<string, fudge.ComponentAudio> = {};
 
-    function gameLoad(): void {
+    async function gameLoad(): Promise<void> {
         document.querySelector("#file-input").addEventListener("change", readSingleFile, false);
+        let playerFailAudio: fudge.Audio = await fudge.Audio.load("../audio/PlayerFail.mp3");
+        let playerFailAudioCmp: fudge.ComponentAudio = new fudge.ComponentAudio(playerFailAudio, false);
+        playerFailAudioCmp.connect(true);
+        playerFailAudioCmp.volume = 3;
+        audioComponents["PlayerFail"] = playerFailAudioCmp;
+
+        let enemyHitAudio: fudge.Audio = await fudge.Audio.load("../audio/EnemyHit.mp3");
+        let enemyHitAudioCmp: fudge.ComponentAudio = new fudge.ComponentAudio(enemyHitAudio, false);
+        enemyHitAudioCmp.connect(true);
+        enemyHitAudioCmp.volume = 3;
+        audioComponents["EnemyHit"] = enemyHitAudioCmp;
+
+        let finishLevelAudio: fudge.Audio = await fudge.Audio.load("../audio/FinishLevel.mp3");
+        let finishLevelAudioCmp: fudge.ComponentAudio = new fudge.ComponentAudio(finishLevelAudio, false);
+        finishLevelAudioCmp.connect(true);
+        finishLevelAudioCmp.volume = 3;
+        audioComponents["FinishLevel"] = finishLevelAudioCmp;
+
+        let bgAudio: fudge.Audio = await fudge.Audio.load("../audio/Background.mp3");
+        let cmpAudioBG: fudge.ComponentAudio = new fudge.ComponentAudio(bgAudio, true, false);
+        cmpAudioBG.connect(true);
+        cmpAudioBG.volume = 1;
+        audioComponents["Background"] = cmpAudioBG;
     }
 
-    function initialize(graph: fudge.Node): void {
+    async function initialize(graph: fudge.Node): Promise<void> {
         let button: HTMLButtonElement = document.querySelector("#file-input");
         button.parentNode.removeChild(button);
+
+        audioComponents["Background"].play(true);
 
         const canvas: HTMLCanvasElement = document.querySelector("canvas");
 

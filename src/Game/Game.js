@@ -8,12 +8,34 @@ var Platform_Game;
     let cameraZ = 10;
     Platform_Game.lowestTile = Number.MAX_VALUE;
     Platform_Game.isRightSided = true;
-    function gameLoad() {
+    Platform_Game.audioComponents = {};
+    async function gameLoad() {
         document.querySelector("#file-input").addEventListener("change", readSingleFile, false);
+        let playerFailAudio = await fudge.Audio.load("../audio/PlayerFail.mp3");
+        let playerFailAudioCmp = new fudge.ComponentAudio(playerFailAudio, false);
+        playerFailAudioCmp.connect(true);
+        playerFailAudioCmp.volume = 3;
+        Platform_Game.audioComponents["PlayerFail"] = playerFailAudioCmp;
+        let enemyHitAudio = await fudge.Audio.load("../audio/EnemyHit.mp3");
+        let enemyHitAudioCmp = new fudge.ComponentAudio(enemyHitAudio, false);
+        enemyHitAudioCmp.connect(true);
+        enemyHitAudioCmp.volume = 3;
+        Platform_Game.audioComponents["EnemyHit"] = enemyHitAudioCmp;
+        let finishLevelAudio = await fudge.Audio.load("../audio/FinishLevel.mp3");
+        let finishLevelAudioCmp = new fudge.ComponentAudio(finishLevelAudio, false);
+        finishLevelAudioCmp.connect(true);
+        finishLevelAudioCmp.volume = 3;
+        Platform_Game.audioComponents["FinishLevel"] = finishLevelAudioCmp;
+        let bgAudio = await fudge.Audio.load("../audio/Background.mp3");
+        let cmpAudioBG = new fudge.ComponentAudio(bgAudio, true, false);
+        cmpAudioBG.connect(true);
+        cmpAudioBG.volume = 1;
+        Platform_Game.audioComponents["Background"] = cmpAudioBG;
     }
-    function initialize(graph) {
+    async function initialize(graph) {
         let button = document.querySelector("#file-input");
         button.parentNode.removeChild(button);
+        Platform_Game.audioComponents["Background"].play(true);
         const canvas = document.querySelector("canvas");
         let cmpCamera = new fudge.ComponentCamera();
         cmpCamera.pivot.translateZ(cameraZ);
@@ -94,23 +116,26 @@ var Platform_Game;
                 let distance = fudge.Vector3.SCALE(this.speed, timeFrame);
                 this.cmpTransform.local.translate(distance);
                 this.checkCollision();
-                console.log(Platform_Game.lowestTile);
                 if (this.mtxLocal.translation.y < Platform_Game.lowestTile - 5) {
                     alert("You lost!");
                     fudge.Loop.stop();
                 }
                 let endPoleX = Platform_Game.viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
+                let hasWon = false;
                 if (Platform_Game.isRightSided) {
                     if (this.mtxLocal.translation.x > endPoleX) {
-                        alert("You won!");
-                        fudge.Loop.stop();
+                        hasWon = true;
                     }
                 }
                 else {
                     if (this.mtxLocal.translation.x < endPoleX) {
-                        alert("You won!");
-                        fudge.Loop.stop();
+                        hasWon = true;
                     }
+                }
+                if (hasWon) {
+                    Platform_Game.audioComponents["FinishLevel"].play(true);
+                    alert("You won!");
+                    fudge.Loop.stop();
                 }
                 this.checkEnemyCollision();
             };
@@ -185,9 +210,11 @@ var Platform_Game;
                 let hit = rect.isInside(pivot);
                 if (hit) {
                     if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
+                        Platform_Game.audioComponents["EnemyHit"].play(true);
                         Platform_Game.viewport.getGraph().removeChild(enemy);
                     }
                     else {
+                        Platform_Game.audioComponents["PlayerFail"].play(true);
                         alert("You lost!");
                         fudge.Loop.stop();
                     }

@@ -84,23 +84,25 @@ namespace Platform_Game {
             this.cmpTransform.local.translate(distance);
       
             this.checkCollision();
-
-            console.log(lowestTile);
             if (this.mtxLocal.translation.y < lowestTile - 5) {
                 alert("You lost!");
                 fudge.Loop.stop();
             }
             let endPoleX: number = viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
+            let hasWon = false;
             if (isRightSided) {
                 if (this.mtxLocal.translation.x > endPoleX) {
-                    alert("You won!");
-                    fudge.Loop.stop();
+                    hasWon = true;
                 }
             } else {
                 if (this.mtxLocal.translation.x < endPoleX) {
-                    alert("You won!");
-                    fudge.Loop.stop();
+                    hasWon = true;
                 }
+            }
+            if (hasWon) {
+                audioComponents["FinishLevel"].play(true);
+                alert("You won!");
+                fudge.Loop.stop();
             }
             this.checkEnemyCollision();
         }
@@ -128,8 +130,10 @@ namespace Platform_Game {
             let hit: boolean = rect.isInside(pivot);
             if (hit) {
                 if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
+                    audioComponents["EnemyHit"].play(true);
                     viewport.getGraph().removeChild(enemy);
                 } else {
+                    audioComponents["PlayerFail"].play(true);
                     alert("You lost!");
                     fudge.Loop.stop();
                 }
