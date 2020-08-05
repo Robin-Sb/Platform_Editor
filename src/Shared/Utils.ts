@@ -18,5 +18,14 @@ namespace Platform_Editor {
       
             return rect;
         }
+
+        static generateTextureFromId(textureId: string): fudge.CoatTextured {
+            let coatTextured: fudge.CoatTextured = new fudge.CoatTextured(); 
+            let img: HTMLImageElement = document.querySelector(textureId);
+            let textureImage: fudge.TextureImage = new fudge.TextureImage();
+            textureImage.image = img;
+            coatTextured.texture = textureImage;
+            return coatTextured;
+        }
     }
 }

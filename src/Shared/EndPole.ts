@@ -8,7 +8,7 @@ namespace Platform_Editor {
             super("EndPole");
         }
 
-        initialize(): void {
+        initialize(translation: fudge.Vector3 = new fudge.Vector3(0.7, -1, 0)): void {
             let base: fudge.Node = new fudge.Node("Base");
             let standardY: number = -2;
             let sizeY: number = 2;
@@ -20,9 +20,9 @@ namespace Platform_Editor {
             base.addComponent(baseMesh);
             base.mtxLocal.scale(new fudge.Vector3(0.5, sizeY, 0));
 
-            let baseMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(EndPole.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            baseMaterial.clrPrimary = this.color;
+            let baseTextured: fudge.CoatTextured = Utils.generateTextureFromId("#polebase_text");
+            let material: fudge.Material = new fudge.Material("PoleMtr", fudge.ShaderTexture, baseTextured);
+            let baseMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(material);
             base.addComponent(baseMaterial);   
 
             let top: fudge.Node = new fudge.Node("Top");
@@ -32,29 +32,16 @@ namespace Platform_Editor {
             let topMesh: fudge.ComponentMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
             top.addComponent(topMesh);
 
-            let topMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(EndPole.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            topMaterial.clrPrimary = this.color;
-            top.addComponent(topMaterial);   
+            let topTextured: fudge.CoatTextured = Utils.generateTextureFromId("#poletop_text");
+            let topMaterial: fudge.Material = new fudge.Material("PoleMtr", fudge.ShaderTexture, topTextured);
+            let topcmpMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(topMaterial);
+            top.addComponent(topcmpMaterial);   
 
-            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(new fudge.Vector3(0, standardY, 0))));
+            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(translation)));
             this.addChild(base);
             this.addChild(top);
         }
         getRectWorld(): fudge.Rectangle[] {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            
-            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
-            
-            // topleft.transform(mtxResult, true);
-            // bottomright.transform(mtxResult, true);
-      
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
             let rects: fudge.Rectangle[] = [];
             for (let node of this.getChildren()) {
                 rects.push(Utils.getRectWorld(node));
@@ -63,5 +50,21 @@ namespace Platform_Editor {
             return rects;
         }
         
+        public serialize(): fudge.Serialization {
+            let serialization: fudge.Serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation
+            }
+            return serialization;
+        }
+
+        public deserialize(_serialization: fudge.Serialization): fudge.Serializable {
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
+            this.name = _serialization.name;
+
+            this.dispatchEvent(new Event(fudge.EVENT.NODE_DESERIALIZED));
+
+            return this;
+        }
     } 
 }

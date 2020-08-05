@@ -215,7 +215,7 @@ var Platform_Editor;
         constructor() {
             super("EndPole");
         }
-        initialize() {
+        initialize(translation = new fudge.Vector3(0.7, -1, 0)) {
             let base = new fudge.Node("Base");
             let standardY = -2;
             let sizeY = 2;
@@ -224,39 +224,42 @@ var Platform_Editor;
             let baseMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             base.addComponent(baseMesh);
             base.mtxLocal.scale(new fudge.Vector3(0.5, sizeY, 0));
-            let baseMaterial = new fudge.ComponentMaterial(EndPole.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            baseMaterial.clrPrimary = this.color;
+            let baseTextured = Platform_Editor.Utils.generateTextureFromId("#polebase_text");
+            let material = new fudge.Material("PoleMtr", fudge.ShaderTexture, baseTextured);
+            let baseMaterial = new fudge.ComponentMaterial(material);
             base.addComponent(baseMaterial);
             let top = new fudge.Node("Top");
             let topTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2 + 0.3, 0)));
             top.addComponent(topTransform);
             let topMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
             top.addComponent(topMesh);
-            let topMaterial = new fudge.ComponentMaterial(EndPole.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            topMaterial.clrPrimary = this.color;
-            top.addComponent(topMaterial);
-            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(new fudge.Vector3(0, standardY, 0))));
+            let topTextured = Platform_Editor.Utils.generateTextureFromId("#poletop_text");
+            let topMaterial = new fudge.Material("PoleMtr", fudge.ShaderTexture, topTextured);
+            let topcmpMaterial = new fudge.ComponentMaterial(topMaterial);
+            top.addComponent(topcmpMaterial);
+            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(translation)));
             this.addChild(base);
             this.addChild(top);
         }
         getRectWorld() {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
-            // topleft.transform(mtxResult, true);
-            // bottomright.transform(mtxResult, true);
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
             let rects = [];
             for (let node of this.getChildren()) {
                 rects.push(Platform_Editor.Utils.getRectWorld(node));
             }
             return rects;
+        }
+        serialize() {
+            let serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation
+            };
+            return serialization;
+        }
+        deserialize(_serialization) {
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
+            this.name = _serialization.name;
+            this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
+            return this;
         }
     }
     EndPole.material = new ƒ.Material("Tower", ƒ.ShaderFlat, new ƒ.CoatColored());
@@ -273,20 +276,10 @@ var Platform_Editor;
             super("Enemy");
         }
         getRectWorld() {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
-            // topleft.transform(mtxResult, true);
-            // bottomright.transform(mtxResult, true);
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
-        initialize() {
-            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+        initialize(translation = new fudge.Vector3(-0.5, -1, 0)) {
+            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
             let img = document.querySelector("#enemy_idle");
             let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
             Enemy.animations = {};
@@ -304,9 +297,8 @@ var Platform_Editor;
             return serialization;
         }
         deserialize(_serialization) {
-            this.initialize();
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
             this.name = _serialization.name;
-            this.mtxLocal.translation = new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0);
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
         }
@@ -329,31 +321,39 @@ var Platform_Editor;
         get isPickable() {
             return this._isPickable;
         }
-        initialize() {
-            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
+        initialize(translation = new fudge.Vector3(0, 1.5, 0), textureId = "#grass_text") {
+            this.textureId = textureId;
+            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation));
             this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(Floor.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            cmpMaterial.clrPrimary = this.color;
+            let coatTextured = Platform_Editor.Utils.generateTextureFromId(textureId);
+            let material = new fudge.Material("FloorMtr", fudge.ShaderTexture, coatTextured);
+            let cmpMaterial = new fudge.ComponentMaterial(material);
+            this.mtxLocal.scaleX(3);
+            this.mtxLocal.scaleY(0.5);
+            // this.color = fudge.Color.CSS("LimeGreen");
+            // cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);
         }
         getRectWorld() {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            // //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
-            // topleft.transform(this.mtxWorld, true);
-            // bottomright.transform(this.mtxWorld, true);
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
+        serialize() {
+            let serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation,
+                textureId: this.textureId
+            };
+            return serialization;
+        }
+        deserialize(_serialization) {
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), _serialization.textureId);
+            this.name = _serialization.name;
+            this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
+            return this;
+        }
     }
-    Floor.material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());
     Platform_Editor.Floor = Floor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
@@ -364,6 +364,7 @@ var Platform_Editor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
+    var fudge = FudgeCore;
     class Utils {
         static getRectWorld(node) {
             let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
@@ -377,6 +378,14 @@ var Platform_Editor;
             rect.position = topleft.toVector2();
             rect.size = size;
             return rect;
+        }
+        static generateTextureFromId(textureId) {
+            let coatTextured = new fudge.CoatTextured();
+            let img = document.querySelector(textureId);
+            let textureImage = new fudge.TextureImage();
+            textureImage.image = img;
+            coatTextured.texture = textureImage;
+            return coatTextured;
         }
     }
     Platform_Editor.Utils = Utils;

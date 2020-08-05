@@ -14,8 +14,8 @@ namespace Platform_Editor {
     function editorLoad(_event: Event): void {
         let cameraZ: number = 10;
         const canvas: HTMLCanvasElement = document.querySelector("#scene_canvas");
-        //const button: HTMLButtonElement =  document.querySelector("#save_game");
-        //button.addEventListener("click", serializeGraph);
+        const button: HTMLButtonElement =  document.querySelector("#save_game");
+        button.addEventListener("click", serializeGraph);
         
         oldX = canvas.width / 2;
         oldY = canvas.height / 2;
@@ -28,16 +28,8 @@ namespace Platform_Editor {
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
 
         let startTile: Floor = new Floor(false);
-        startTile.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
-      
-        let cmpMesh: fudge.ComponentMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
-        startTile.addComponent(cmpMesh);
+        startTile.initialize(new fudge.Vector3(0, 0, 0), "#pavement_text");
 
-        let cmpMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored()));
-        cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
-        startTile.addComponent(cmpMaterial);
-        startTile.mtxLocal.scaleX(3);
-        startTile.mtxLocal.scaleY(0.5);
         graph.addChild(startTile);
 
         viewport = new fudge.Viewport();
@@ -57,6 +49,31 @@ namespace Platform_Editor {
     }
 
 
+    function initializeEditorViewport(): void {
+        const editorCanvas: HTMLCanvasElement = document.querySelector("#editor_canvas");
+        editorCanvas.height = viewport.getCanvasRectangle().height;
+        let editorGraph: fudge.Node = new fudge.Node("Editor Graph");
+        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
+
+        editorViewport = new fudge.Viewport();
+        
+        let editorCamera: fudge.ComponentCamera = new fudge.ComponentCamera();
+        editorCamera.pivot.translateZ(5);
+        editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.2);
+
+        editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
+        let baseNode: Floor = new Floor();
+        baseNode.initialize();
+        let enemy: Enemy = new Enemy();
+        enemy.initialize();
+        let endPole: EndPole = new EndPole();
+        endPole.initialize();
+        editorGraph.addChild(baseNode);
+        editorGraph.addChild(enemy);
+        editorGraph.addChild(endPole);
+    }
+
     function pointerMove(_event: fudge.EventPointer): void {
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.SHIFT_LEFT])) {
             let scale: number = 0.005;
@@ -71,7 +88,7 @@ namespace Platform_Editor {
     }
 
     function serializeGraph(): void {
-        if (!graph.getChildrenByName("EndPole")) {
+        if (graph.getChildrenByName("EndPole").length != 1) {
             alert("The endpole must be set!");
             return;
         }
@@ -103,30 +120,6 @@ namespace Platform_Editor {
         window.URL.revokeObjectURL(url);
     }    
 
-    function initializeEditorViewport(): void {
-        const editorCanvas: HTMLCanvasElement = document.querySelector("#editor_canvas");
-        editorCanvas.height = viewport.getCanvasRectangle().height;
-        let editorGraph: fudge.Node = new fudge.Node("Editor Graph");
-        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
-
-        editorViewport = new fudge.Viewport();
-        
-        let editorCamera: fudge.ComponentCamera = new fudge.ComponentCamera();
-        editorCamera.pivot.translateZ(5);
-        editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.2);
-
-        editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-        let baseNode: Floor = new Floor();
-        baseNode.initialize();
-        let enemy: Enemy = new Enemy();
-        enemy.initialize();
-        let endPole: EndPole = new EndPole();
-        endPole.initialize();
-        editorGraph.addChild(baseNode);
-        editorGraph.addChild(enemy);
-        editorGraph.addChild(endPole);
-    }
 
     
     // function event(): void {

@@ -13,25 +13,11 @@ namespace Platform_Editor {
         }
 
         getRectWorld(): fudge.Rectangle[] {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            
-            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
-            
-            // topleft.transform(mtxResult, true);
-            // bottomright.transform(mtxResult, true);
-      
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
-      
             return [Utils.getRectWorld(this)];
         }
 
-        public initialize(): void {
-            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+        public initialize(translation: fudge.Vector3 = new fudge.Vector3(-0.5, -1, 0)): void {
+            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
       
             let img: HTMLImageElement = document.querySelector("#enemy_idle");
             let spritesheet: fudge.CoatTextured = fudgeAid.createSpriteSheet("Enemy", img);
@@ -55,9 +41,8 @@ namespace Platform_Editor {
         }
 
         public deserialize(_serialization: fudge.Serialization): fudge.Serializable {
-            this.initialize();
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
             this.name = _serialization.name;
-            this.mtxLocal.translation = new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0);
 
             this.dispatchEvent(new Event(fudge.EVENT.NODE_DESERIALIZED));
 

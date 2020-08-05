@@ -10,8 +10,8 @@ var Platform_Editor;
     function editorLoad(_event) {
         let cameraZ = 10;
         const canvas = document.querySelector("#scene_canvas");
-        //const button: HTMLButtonElement =  document.querySelector("#save_game");
-        //button.addEventListener("click", serializeGraph);
+        const button = document.querySelector("#save_game");
+        button.addEventListener("click", serializeGraph);
         oldX = canvas.width / 2;
         oldY = canvas.height / 2;
         let cmpCamera = new fudge.ComponentCamera();
@@ -20,14 +20,7 @@ var Platform_Editor;
         cmpCamera.backgroundColor = fudge.Color.CSS("LightSkyBlue");
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
         let startTile = new Platform_Editor.Floor(false);
-        startTile.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
-        let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
-        startTile.addComponent(cmpMesh);
-        let cmpMaterial = new fudge.ComponentMaterial(new fudge.Material("EnemyMtr", fudge.ShaderFlat, new fudge.CoatColored()));
-        cmpMaterial.clrPrimary = fudge.Color.CSS("LimeGreen");
-        startTile.addComponent(cmpMaterial);
-        startTile.mtxLocal.scaleX(3);
-        startTile.mtxLocal.scaleY(0.5);
+        startTile.initialize(new fudge.Vector3(0, 0, 0), "#pavement_text");
         graph.addChild(startTile);
         Platform_Editor.viewport = new fudge.Viewport();
         Platform_Editor.viewport.initialize("Viewport", graph, cmpCamera, canvas);
@@ -38,6 +31,27 @@ var Platform_Editor;
         // tslint:disable-next-line: no-unused-expression
         new Platform_Editor.ViewportControl(cameraZ);
         Platform_Editor.viewport.draw();
+    }
+    function initializeEditorViewport() {
+        const editorCanvas = document.querySelector("#editor_canvas");
+        editorCanvas.height = Platform_Editor.viewport.getCanvasRectangle().height;
+        let editorGraph = new fudge.Node("Editor Graph");
+        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
+        Platform_Editor.editorViewport = new fudge.Viewport();
+        let editorCamera = new fudge.ComponentCamera();
+        editorCamera.pivot.translateZ(5);
+        editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.2);
+        Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
+        let baseNode = new Platform_Editor.Floor();
+        baseNode.initialize();
+        let enemy = new Platform_Editor.Enemy();
+        enemy.initialize();
+        let endPole = new Platform_Editor.EndPole();
+        endPole.initialize();
+        editorGraph.addChild(baseNode);
+        editorGraph.addChild(enemy);
+        editorGraph.addChild(endPole);
     }
     function pointerMove(_event) {
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.SHIFT_LEFT])) {
@@ -51,7 +65,7 @@ var Platform_Editor;
         oldY = _event.canvasY;
     }
     function serializeGraph() {
-        if (!graph.getChildrenByName("EndPole")) {
+        if (graph.getChildrenByName("EndPole").length != 1) {
             alert("The endpole must be set!");
             return;
         }
@@ -80,27 +94,6 @@ var Platform_Editor;
         downloader.click();
         document.body.removeChild(downloader);
         window.URL.revokeObjectURL(url);
-    }
-    function initializeEditorViewport() {
-        const editorCanvas = document.querySelector("#editor_canvas");
-        editorCanvas.height = Platform_Editor.viewport.getCanvasRectangle().height;
-        let editorGraph = new fudge.Node("Editor Graph");
-        fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
-        Platform_Editor.editorViewport = new fudge.Viewport();
-        let editorCamera = new fudge.ComponentCamera();
-        editorCamera.pivot.translateZ(5);
-        editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.2);
-        Platform_Editor.editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-        let baseNode = new Platform_Editor.Floor();
-        baseNode.initialize();
-        let enemy = new Platform_Editor.Enemy();
-        enemy.initialize();
-        let endPole = new Platform_Editor.EndPole();
-        endPole.initialize();
-        editorGraph.addChild(baseNode);
-        editorGraph.addChild(enemy);
-        editorGraph.addChild(endPole);
     }
     // function event(): void {
     //     let node: fudge.Node = new fudge.Node("node");
@@ -134,13 +127,8 @@ var Platform_Editor;
                     // cmpMaterial.clrPrimary = fudge.Color.CSS("red");
                     let rayEnd = this.getRayEnd(posMouse);
                     let cmpTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
-                    cmpTransform.local.translation = rayEnd;
+                    cmpTransform.local.translation = new fudge.Vector3(rayEnd.x, rayEnd.y, 0.01);
                     Platform_Editor.viewport.draw();
-                    let cmpMesh = this.selectedNode.getComponent(fudge.ComponentMesh);
-                    let ray = Platform_Editor.viewport.getRayFromClient(posMouse);
-                    console.log("verts: " + cmpMesh.mesh.vertices);
-                    console.log("model" + this.selectedNode.mtxLocal);
-                    console.log("ray" + ray.intersectPlane(this.selectedNode.mtxLocal.translation, new fudge.Vector3(0, 0, 1)));
                 }
             };
             this.releaseNode = (_event) => {
@@ -151,7 +139,7 @@ var Platform_Editor;
                         let translation = this.selectedNode.mtxLocal.translation;
                         translation.x = Math.round(translation.x * 10) / 10;
                         translation.y = Math.round(translation.y * 10) / 10;
-                        this.selectedNode.mtxLocal.translation = new fudge.Vector3(translation.x, translation.y, 0);
+                        this.selectedNode.mtxLocal.translation = new fudge.Vector3(translation.x, translation.y, 0.01);
                     }
                     this.selectedNode = null;
                     Platform_Editor.viewport.draw();
@@ -203,7 +191,7 @@ var Platform_Editor;
         // }
         convertToMainViewport(selectedNode) {
             Platform_Editor.editorViewport.getGraph().removeChild(selectedNode);
-            selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Editor.viewport.camera.pivot.translation.x, Platform_Editor.viewport.camera.pivot.translation.y, 0);
+            selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Editor.viewport.camera.pivot.translation.x, Platform_Editor.viewport.camera.pivot.translation.y, 0.01);
             Platform_Editor.viewport.getGraph().addChild(selectedNode);
         }
         getRayEnd(_mousepos) {
@@ -266,7 +254,7 @@ var Platform_Editor;
         constructor() {
             super("EndPole");
         }
-        initialize() {
+        initialize(translation = new fudge.Vector3(0.7, -1, 0)) {
             let base = new fudge.Node("Base");
             let standardY = -2;
             let sizeY = 2;
@@ -275,39 +263,42 @@ var Platform_Editor;
             let baseMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             base.addComponent(baseMesh);
             base.mtxLocal.scale(new fudge.Vector3(0.5, sizeY, 0));
-            let baseMaterial = new fudge.ComponentMaterial(EndPole.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            baseMaterial.clrPrimary = this.color;
+            let baseTextured = Platform_Editor.Utils.generateTextureFromId("#polebase_text");
+            let material = new fudge.Material("PoleMtr", fudge.ShaderTexture, baseTextured);
+            let baseMaterial = new fudge.ComponentMaterial(material);
             base.addComponent(baseMaterial);
             let top = new fudge.Node("Top");
             let topTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2 + 0.3, 0)));
             top.addComponent(topTransform);
             let topMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
             top.addComponent(topMesh);
-            let topMaterial = new fudge.ComponentMaterial(EndPole.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            topMaterial.clrPrimary = this.color;
-            top.addComponent(topMaterial);
-            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(new fudge.Vector3(0, standardY, 0))));
+            let topTextured = Platform_Editor.Utils.generateTextureFromId("#poletop_text");
+            let topMaterial = new fudge.Material("PoleMtr", fudge.ShaderTexture, topTextured);
+            let topcmpMaterial = new fudge.ComponentMaterial(topMaterial);
+            top.addComponent(topcmpMaterial);
+            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(translation)));
             this.addChild(base);
             this.addChild(top);
         }
         getRectWorld() {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
-            // topleft.transform(mtxResult, true);
-            // bottomright.transform(mtxResult, true);
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
             let rects = [];
             for (let node of this.getChildren()) {
                 rects.push(Platform_Editor.Utils.getRectWorld(node));
             }
             return rects;
+        }
+        serialize() {
+            let serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation
+            };
+            return serialization;
+        }
+        deserialize(_serialization) {
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
+            this.name = _serialization.name;
+            this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
+            return this;
         }
     }
     EndPole.material = new ƒ.Material("Tower", ƒ.ShaderFlat, new ƒ.CoatColored());
@@ -324,20 +315,10 @@ var Platform_Editor;
             super("Enemy");
         }
         getRectWorld() {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            // let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, pivot);
-            // topleft.transform(mtxResult, true);
-            // bottomright.transform(mtxResult, true);
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
-        initialize() {
-            this.addComponent(new fudge.ComponentTransform(new fudge.Matrix4x4()));
+        initialize(translation = new fudge.Vector3(-0.5, -1, 0)) {
+            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
             let img = document.querySelector("#enemy_idle");
             let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
             Enemy.animations = {};
@@ -355,9 +336,8 @@ var Platform_Editor;
             return serialization;
         }
         deserialize(_serialization) {
-            this.initialize();
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
             this.name = _serialization.name;
-            this.mtxLocal.translation = new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0);
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
         }
@@ -380,31 +360,39 @@ var Platform_Editor;
         get isPickable() {
             return this._isPickable;
         }
-        initialize() {
-            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
+        initialize(translation = new fudge.Vector3(0, 1.5, 0), textureId = "#grass_text") {
+            this.textureId = textureId;
+            let cmpTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation));
             this.addComponent(cmpTransform);
             let cmpMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
-            let cmpMaterial = new fudge.ComponentMaterial(Floor.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            cmpMaterial.clrPrimary = this.color;
+            let coatTextured = Platform_Editor.Utils.generateTextureFromId(textureId);
+            let material = new fudge.Material("FloorMtr", fudge.ShaderTexture, coatTextured);
+            let cmpMaterial = new fudge.ComponentMaterial(material);
+            this.mtxLocal.scaleX(3);
+            this.mtxLocal.scaleY(0.5);
+            // this.color = fudge.Color.CSS("LimeGreen");
+            // cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);
         }
         getRectWorld() {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            // //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
-            // topleft.transform(this.mtxWorld, true);
-            // bottomright.transform(this.mtxWorld, true);
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
+        serialize() {
+            let serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation,
+                textureId: this.textureId
+            };
+            return serialization;
+        }
+        deserialize(_serialization) {
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), _serialization.textureId);
+            this.name = _serialization.name;
+            this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
+            return this;
+        }
     }
-    Floor.material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());
     Platform_Editor.Floor = Floor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
@@ -415,6 +403,7 @@ var Platform_Editor;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
+    var fudge = FudgeCore;
     class Utils {
         static getRectWorld(node) {
             let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
@@ -428,6 +417,14 @@ var Platform_Editor;
             rect.position = topleft.toVector2();
             rect.size = size;
             return rect;
+        }
+        static generateTextureFromId(textureId) {
+            let coatTextured = new fudge.CoatTextured();
+            let img = document.querySelector(textureId);
+            let textureImage = new fudge.TextureImage();
+            textureImage.image = img;
+            coatTextured.texture = textureImage;
+            return coatTextured;
         }
     }
     Platform_Editor.Utils = Utils;

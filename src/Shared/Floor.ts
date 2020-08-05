@@ -4,9 +4,9 @@ namespace Platform_Editor {
     import fudge = FudgeCore; 
     
     export class Floor extends fudge.Node implements PickableNode  {
-        private static material: fudge.Material = new fudge.Material("FloorMtr", fudge.ShaderFlat, new fudge.CoatColored());
         color: fudge.Color;
         private _isPickable: boolean = true;
+        private textureId: string;
 
         constructor (isPickable: boolean = true) {
             super("Floor");
@@ -19,36 +19,49 @@ namespace Platform_Editor {
             return this._isPickable;
         }
 
-        public initialize(): void {
-            let cmpTransform: fudge.ComponentTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 1.4, 0)));
+        public initialize(translation: fudge.Vector3 = new fudge.Vector3(0, 1.5, 0), textureId: string = "#grass_text"): void {
+            this.textureId = textureId;
+            let cmpTransform: fudge.ComponentTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation));
             this.addComponent(cmpTransform);
       
             let cmpMesh: fudge.ComponentMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             this.addComponent(cmpMesh);
-      
-            let cmpMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(Floor.material);
-            this.color = fudge.Color.CSS("LimeGreen");
-            cmpMaterial.clrPrimary = this.color;
+
+            let coatTextured: fudge.CoatTextured = Utils.generateTextureFromId(textureId); 
+
+            let material: fudge.Material = new fudge.Material("FloorMtr", fudge.ShaderTexture, coatTextured);
+            let cmpMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(material);
+
+            this.mtxLocal.scaleX(3);
+            this.mtxLocal.scaleY(0.5);
+    
+            // this.color = fudge.Color.CSS("LimeGreen");
+            // cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);   
         }
 
-        public getRectWorld(): fudge.Rectangle[] {
-            // let rect: ƒ.Rectangle = ƒ.Rectangle.GET(0, 0, 100, 100);
-            // let topleft: ƒ.Vector3 = new ƒ.Vector3(-0.5, 0.5, 0);
-            // let bottomright: ƒ.Vector3 = new ƒ.Vector3(0.5, -0.5, 0);
-            
-            // //let pivot: ƒ.Matrix4x4 = this.getComponent(ƒ.ComponentMesh).pivot;
-            // //let mtxResult: ƒ.Matrix4x4 = ƒ.Matrix4x4.MULTIPLICATION(this.mtxWorld, Floor.pivot);
-            
-            // topleft.transform(this.mtxWorld, true);
-            // bottomright.transform(this.mtxWorld, true);
-      
-            // let size: ƒ.Vector2 = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
-            // rect.position = topleft.toVector2();
-            // rect.size = size;
-      
+        public getRectWorld(): fudge.Rectangle[] {      
             return [Utils.getRectWorld(this)];
         }
+
+        public serialize(): fudge.Serialization {
+            let serialization: fudge.Serialization = {
+                name: this.name,
+                translation: this.mtxLocal.translation,
+                textureId: this.textureId
+            }
+            return serialization;
+        }
+
+        public deserialize(_serialization: fudge.Serialization): fudge.Serializable {
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), _serialization.textureId);
+            this.name = _serialization.name;
+            this.dispatchEvent(new Event(fudge.EVENT.NODE_DESERIALIZED));
+
+            return this;
+        }
+
+
 
     }
 }

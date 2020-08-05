@@ -25,327 +25,24 @@
         {
           "Platform_Editor.Floor": {
             "name": "Floor",
-            "components": {
-              "ComponentTransform": [
-                {
-                  "ƒ.ComponentTransform": {
-                    "local": {
-                      "translation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 3,
-                        "y": 0.5,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMesh": [
-                {
-                  "ƒ.ComponentMesh": {
-                    "mesh": {
-                      "ƒ.MeshQuad": {}
-                    },
-                    "pivot": {
-                      "translation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMaterial": [
-                {
-                  "ƒ.ComponentMaterial": {
-                    "idMaterial": "Material|2020-08-04T12:07:11.232Z|92430",
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ]
-            },
-            "children": []
-          }
-        },
-        {
-          "Platform_Editor.Enemy": {
-            "name": "Enemy",
             "translation": {
               "data": {
-                "0": 4.2360310554504395,
-                "1": 0.403918981552124,
+                "0": 0,
+                "1": 0,
                 "2": 0
               }
-            }
-          }
-        },
-        {
-          "Platform_Editor.Floor": {
-            "name": "Floor",
-            "components": {
-              "ComponentTransform": [
-                {
-                  "ƒ.ComponentTransform": {
-                    "local": {
-                      "translation": {
-                        "x": 2.058774948120117,
-                        "y": -0.22953420877456665,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMesh": [
-                {
-                  "ƒ.ComponentMesh": {
-                    "mesh": {
-                      "ƒ.MeshQuad": {}
-                    },
-                    "pivot": {
-                      "translation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMaterial": [
-                {
-                  "ƒ.ComponentMaterial": {
-                    "idMaterial": "Material|2020-08-04T12:07:11.186Z|64429",
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ]
             },
-            "children": []
-          }
-        },
-        {
-          "Platform_Editor.Floor": {
-            "name": "Floor",
-            "components": {
-              "ComponentTransform": [
-                {
-                  "ƒ.ComponentTransform": {
-                    "local": {
-                      "translation": {
-                        "x": 3.1597743034362793,
-                        "y": -0.2278422713279724,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMesh": [
-                {
-                  "ƒ.ComponentMesh": {
-                    "mesh": {
-                      "ƒ.MeshQuad": {}
-                    },
-                    "pivot": {
-                      "translation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMaterial": [
-                {
-                  "ƒ.ComponentMaterial": {
-                    "idMaterial": "Material|2020-08-04T12:07:11.186Z|64429",
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ]
-            },
-            "children": []
-          }
-        },
-        {
-          "Platform_Editor.Floor": {
-            "name": "Floor",
-            "components": {
-              "ComponentTransform": [
-                {
-                  "ƒ.ComponentTransform": {
-                    "local": {
-                      "translation": {
-                        "x": 4.229087829589844,
-                        "y": -0.2208995223045349,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMesh": [
-                {
-                  "ƒ.ComponentMesh": {
-                    "mesh": {
-                      "ƒ.MeshQuad": {}
-                    },
-                    "pivot": {
-                      "translation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "rotation": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0
-                      },
-                      "scaling": {
-                        "x": 1,
-                        "y": 1,
-                        "z": 1
-                      }
-                    },
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ],
-              "ComponentMaterial": [
-                {
-                  "ƒ.ComponentMaterial": {
-                    "idMaterial": "Material|2020-08-04T12:07:11.186Z|64429",
-                    "Component": {
-                      "active": true
-                    }
-                  }
-                }
-              ]
-            },
-            "children": []
-          }
-        },
-        {
-          "Platform_Editor.Enemy": {
-            "name": "Enemy",
-            "translation": {
-              "data": {
-                "0": 3.2153234481811523,
-                "1": 0.2650705575942993,
-                "2": 0
-              }
-            }
+            "textureId": "#pavement_text"
           }
         }
       ]
     }
   },
   "resources": {
-    "Material|2020-08-04T12:07:11.186Z|57819": {
+    "Material|2020-08-05T14:02:21.548Z|51825": {
       "ƒ.Material": {
-        "name": "EnemyMtr",
-        "idResource": "Material|2020-08-04T12:07:11.186Z|57819",
+        "name": "Tower",
+        "idResource": "Material|2020-08-05T14:02:21.548Z|51825",
         "shader": "ShaderFlat",
         "coat": {
           "ƒ.CoatColored": {
@@ -360,46 +57,48 @@
         }
       }
     },
-    "Material|2020-08-04T12:07:11.186Z|64429": {
+    "Material|2020-08-05T14:02:21.579Z|84087": {
       "ƒ.Material": {
         "name": "FloorMtr",
-        "idResource": "Material|2020-08-04T12:07:11.186Z|64429",
-        "shader": "ShaderFlat",
+        "idResource": "Material|2020-08-05T14:02:21.579Z|84087",
+        "shader": "ShaderTexture",
         "coat": {
-          "ƒ.CoatColored": {
+          "ƒ.CoatTextured": {
             "name": "Coat",
             "color": {
-              "r": 0.5,
-              "g": 0.5,
-              "b": 0.5,
+              "r": 1,
+              "g": 1,
+              "b": 1,
               "a": 1
-            }
+            },
+            "texture": {}
           }
         }
       }
     },
-    "Material|2020-08-04T12:07:11.232Z|92430": {
+    "Material|2020-08-05T14:02:21.584Z|11403": {
       "ƒ.Material": {
-        "name": "EnemyMtr",
-        "idResource": "Material|2020-08-04T12:07:11.232Z|92430",
-        "shader": "ShaderFlat",
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T14:02:21.584Z|11403",
+        "shader": "ShaderTexture",
         "coat": {
-          "ƒ.CoatColored": {
+          "ƒ.CoatTextured": {
             "name": "Coat",
             "color": {
-              "r": 0.5,
-              "g": 0.5,
-              "b": 0.5,
+              "r": 1,
+              "g": 1,
+              "b": 1,
               "a": 1
-            }
+            },
+            "texture": {}
           }
         }
       }
     },
-    "Material|2020-08-04T12:07:11.241Z|50516": {
+    "Material|2020-08-05T14:02:21.584Z|58417": {
       "ƒ.Material": {
         "name": "Enemy",
-        "idResource": "Material|2020-08-04T12:07:11.241Z|50516",
+        "idResource": "Material|2020-08-05T14:02:21.584Z|58417",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {
@@ -415,14 +114,14 @@
         }
       }
     },
-    "Material|2020-08-04T12:07:12.672Z|57801": {
+    "Material|2020-08-05T14:02:21.591Z|41244": {
       "ƒ.Material": {
-        "name": "Enemy",
-        "idResource": "Material|2020-08-04T12:07:12.672Z|57801",
+        "name": "PoleMtr",
+        "idResource": "Material|2020-08-05T14:02:21.591Z|41244",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {
-            "name": "Enemy",
+            "name": "Coat",
             "color": {
               "r": 1,
               "g": 1,
@@ -434,14 +133,14 @@
         }
       }
     },
-    "Material|2020-08-04T12:25:14.851Z|91492": {
+    "Material|2020-08-05T14:02:21.592Z|08990": {
       "ƒ.Material": {
-        "name": "Enemy",
-        "idResource": "Material|2020-08-04T12:25:14.851Z|91492",
+        "name": "PoleMtr",
+        "idResource": "Material|2020-08-05T14:02:21.592Z|08990",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {
-            "name": "Enemy",
+            "name": "Coat",
             "color": {
               "r": 1,
               "g": 1,

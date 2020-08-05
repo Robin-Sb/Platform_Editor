@@ -41,7 +41,7 @@ namespace Platform_Editor {
 
         private convertToMainViewport(selectedNode: fudge.Node): void {
             editorViewport.getGraph().removeChild(selectedNode);
-            selectedNode.mtxLocal.translation = new fudge.Vector3(viewport.camera.pivot.translation.x, viewport.camera.pivot.translation.y, 0); 
+            selectedNode.mtxLocal.translation = new fudge.Vector3(viewport.camera.pivot.translation.x, viewport.camera.pivot.translation.y, 0.01); 
             viewport.getGraph().addChild(selectedNode);
         }
     
@@ -62,14 +62,8 @@ namespace Platform_Editor {
 
                 let rayEnd: fudge.Vector3 = this.getRayEnd(posMouse);
                 let cmpTransform: fudge.ComponentTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
-                cmpTransform.local.translation = rayEnd;
+                cmpTransform.local.translation = new fudge.Vector3(rayEnd.x, rayEnd.y, 0.01);
                 viewport.draw();
-
-                let cmpMesh: fudge.ComponentMesh = this.selectedNode.getComponent(fudge.ComponentMesh);
-                let ray: fudge.Ray = viewport.getRayFromClient(posMouse);
-                console.log("verts: " + cmpMesh.mesh.vertices);
-                console.log("model" + this.selectedNode.mtxLocal);
-                console.log("ray" + ray.intersectPlane(this.selectedNode.mtxLocal.translation, new fudge.Vector3(0, 0, 1)));
             }
         }
     
@@ -81,7 +75,7 @@ namespace Platform_Editor {
                     let translation: fudge.Vector3 = this.selectedNode.mtxLocal.translation;
                     translation.x = Math.round(translation.x * 10) / 10;
                     translation.y = Math.round(translation.y * 10) / 10;   
-                    this.selectedNode.mtxLocal.translation = new fudge.Vector3(translation.x, translation.y, 0);
+                    this.selectedNode.mtxLocal.translation = new fudge.Vector3(translation.x, translation.y, 0.01);
                 }
     
                 this.selectedNode = null;
