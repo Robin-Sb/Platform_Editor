@@ -8,15 +8,15 @@ final assignment for prima
 |    | Name                  | Robin Schwab
 |    | Matrikelnummer        | 256325
 |  1 | Nutzerinteraktion     | Im Editor: 
-- Navigieren der Szene über Shift + Mausbewegen
-- Objekte zur Szene hinzufügen über Mausklick
-- Objekte verschieben mit Drag and Drop (zum Grid snappen über Ctrl-links)
-- Selektierte Objekte entfernen über delete
-- Aktionen rückgängig machen über Ctrl + Z (experimentell)
+Navigieren der Szene über Shift + Mausbewegen
+Objekte zur Szene hinzufügen über Mausklick
+Objekte verschieben mit Drag and Drop (zum Grid snappen über Ctrl-links)
+Selektierte Objekte entfernen über delete
+Aktionen rückgängig machen über Ctrl + Z (experimentell)
 Im Game: 
--  Bewegen über a/d oder linke/rechte Pfeiltasten
--  Springen mit Leertaste
--  Musik stummschalten mit m 
+Bewegen über a/d oder linke/rechte Pfeiltasten
+Springen mit Leertaste
+-Musik stummschalten mit m 
 
 
 |  2 | Objektinteraktion     | Mit Hilfe von Kollisionsprüfung interagieren Objekte miteinander. Wann passiert dabei wie was?                                                                                                                                                                                 |
