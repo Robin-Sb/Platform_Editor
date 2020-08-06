@@ -4,7 +4,6 @@ namespace Platform_Editor {
     import fudge = FudgeCore; 
     
     export class Floor extends fudge.Node implements PickableNode  {
-        color: fudge.Color;
         private _isPickable: boolean = true;
         private textureId: string;
 
@@ -34,9 +33,6 @@ namespace Platform_Editor {
 
             this.mtxLocal.scaleX(3);
             this.mtxLocal.scaleY(0.5);
-    
-            // this.color = fudge.Color.CSS("LimeGreen");
-            // cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);   
         }
 
@@ -49,7 +45,7 @@ namespace Platform_Editor {
                 name: this.name,
                 translation: this.mtxLocal.translation,
                 textureId: this.textureId
-            }
+            };
             return serialization;
         }
 
@@ -60,8 +56,5 @@ namespace Platform_Editor {
 
             return this;
         }
-
-
-
     }
 }

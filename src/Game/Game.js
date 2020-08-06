@@ -44,6 +44,9 @@ var Platform_Game;
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
         Platform_Game.viewport = new fudge.Viewport();
         Platform_Game.viewport.initialize("Viewport", graph, cmpCamera, canvas);
+        Platform_Game.viewport.addEventListener("\u0192keydown" /* DOWN */, musisControl);
+        Platform_Game.viewport.activateKeyboardEvent("\u0192keydown" /* DOWN */, true);
+        Platform_Game.viewport.setFocus(true);
         if (graph.getChildrenByName("EndPole")[0].mtxLocal.translation.x < 0) {
             Platform_Game.isRightSided = false;
         }
@@ -51,6 +54,10 @@ var Platform_Game;
             let tileY = floor.mtxLocal.translation.y;
             if (tileY < Platform_Game.lowestTile)
                 Platform_Game.lowestTile = tileY;
+        }
+        let enemies = graph.getChildrenByName("Enemy");
+        for (let enemy of enemies) {
+            enemy.preProcessEnemy(graph.getChildrenByName("Floor"));
         }
         Platform_Game.Player.generateSprite();
         player = new Platform_Game.Player();
@@ -77,6 +84,11 @@ var Platform_Game;
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.SPACE]))
             player.act(Platform_Game.ACTION.JUMP);
     }
+    function musisControl(_event) {
+        if (_event.code == fudge.KEYBOARD_CODE.M) {
+            Platform_Game.audioComponents["Background"].play(false);
+        }
+    }
     function readSingleFile(event) {
         var file = event.target.files[0];
         if (!file) {
@@ -87,7 +99,7 @@ var Platform_Game;
             var contents = event.target.result;
             let coreSerialization = JSON.parse(contents.toString());
             fudge.Serializer.registerNamespace(Platform_Editor);
-            fudge.ResourceManager.deserialize(coreSerialization.resources);
+            //fudge.ResourceManager.deserialize(coreSerialization.resources);
             let reconstruction = fudge.Serializer.deserialize(coreSerialization.graph);
             // let serialization: fudge.Serialization = fudge.Serializer.parse(contents.toString());
             // let reconstruction: fudge.Serializable = fudge.Serializer.deserialize(serialization);
@@ -101,11 +113,6 @@ var Platform_Game;
 (function (Platform_Game) {
     var fudge = FudgeCore;
     var fudgeAid = FudgeAid;
-    let DIRECTION;
-    (function (DIRECTION) {
-        DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
-        DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
-    })(DIRECTION = Platform_Game.DIRECTION || (Platform_Game.DIRECTION = {}));
     class Player extends fudgeAid.NodeSprite {
         constructor(_name = "Player") {
             super(_name);
@@ -151,10 +158,6 @@ var Platform_Game;
             let idleImg = document.querySelector("#player_idle");
             let sprite = Player.appendSprite(idleImg, Platform_Game.ACTION.IDLE, 4);
             sprite.frames[2].timeScale = 10;
-            // let idleSheet: fudge.CoatTextured = fudgeAid.createSpriteSheet("Walk", idleImg);
-            // sprite = new fudgeAid.SpriteSheetAnimation(ACTION.IDLE, idleSheet);
-            // sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
-            // Player.animations[ACTION.IDLE] = sprite;
         }
         static appendSprite(image, action, frames) {
             let spritesheet = fudgeAid.createSpriteSheet("Player", image);
@@ -169,7 +172,7 @@ var Platform_Game;
                     this.speed.x = 0;
                     break;
                 case Platform_Game.ACTION.WALK:
-                    let direction = (_direction == DIRECTION.RIGHT ? 1 : -1);
+                    let direction = (_direction == Platform_Game.DIRECTION.RIGHT ? 1 : -1);
                     this.speed.x = Player.speedMax.x; // * direction;
                     this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
                     break;
@@ -214,6 +217,7 @@ var Platform_Game;
                     if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
                         Platform_Game.audioComponents["EnemyHit"].play(true);
                         Platform_Game.viewport.getGraph().removeChild(enemy);
+                        enemy.removeListener();
                     }
                     else {
                         Platform_Game.audioComponents["PlayerFail"].play(true);
@@ -227,6 +231,14 @@ var Platform_Game;
     Player.speedMax = new fudge.Vector2(1.5, 5); // units per second
     Player.gravity = fudge.Vector2.Y(-3);
     Platform_Game.Player = Player;
+})(Platform_Game || (Platform_Game = {}));
+var Platform_Game;
+(function (Platform_Game) {
+    let DIRECTION;
+    (function (DIRECTION) {
+        DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
+        DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
+    })(DIRECTION = Platform_Game.DIRECTION || (Platform_Game.DIRECTION = {}));
 })(Platform_Game || (Platform_Game = {}));
 var Platform_Game;
 (function (Platform_Game) {
@@ -246,7 +258,6 @@ var Platform_Editor;
         }
         initialize(translation = new fudge.Vector3(0.7, -1, 0)) {
             let base = new fudge.Node("Base");
-            let standardY = -2;
             let sizeY = 2;
             let baseTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 0, 0)));
             base.addComponent(baseTransform);
@@ -302,20 +313,57 @@ var Platform_Editor;
     class Enemy extends fudgeAid.NodeSprite {
         constructor() {
             super("Enemy");
+            this.currentDirection = Platform_Game.DIRECTION.RIGHT;
+            this.adjacentFloors = [];
+            this.update = () => {
+                let direction = (this.currentDirection == Platform_Game.DIRECTION.RIGHT ? 1 : -1);
+                this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
+                let timeFrame = fudge.Loop.timeFrameGame / 500;
+                let distance = fudge.Vector3.SCALE(Enemy.speed, timeFrame);
+                this.cmpTransform.local.translate(distance);
+                let adjacentFloorMtx;
+                if (this.currentDirection == Platform_Game.DIRECTION.LEFT) {
+                    adjacentFloorMtx = this.adjacentFloors[0].mtxLocal;
+                    if (this.mtxLocal.translation.x < adjacentFloorMtx.translation.x - adjacentFloorMtx.scaling.x / 2) {
+                        this.mtxLocal.translation.x = adjacentFloorMtx.translation.x - adjacentFloorMtx.scaling.x / 2;
+                        this.currentDirection = Platform_Game.DIRECTION.RIGHT;
+                    }
+                }
+                else {
+                    adjacentFloorMtx = this.adjacentFloors[this.adjacentFloors.length - 1].mtxLocal;
+                    if (this.mtxLocal.translation.x > adjacentFloorMtx.translation.x + adjacentFloorMtx.scaling.x / 2) {
+                        this.mtxLocal.translation.x = adjacentFloorMtx.translation.x + adjacentFloorMtx.scaling.x / 2;
+                        this.currentDirection = Platform_Game.DIRECTION.LEFT;
+                    }
+                }
+            };
         }
         getRectWorld() {
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
-        initialize(translation = new fudge.Vector3(-0.5, -1, 0)) {
+        initialize(translation = new fudge.Vector3(-0.5, -1, 0), texture = "idle") {
+            let frames;
+            let textureId;
+            let action;
+            if (texture == "idle") {
+                frames = 4;
+                textureId = "#enemy_idle";
+                action = Platform_Game.ACTION.IDLE;
+            }
+            else if (texture == "walk") {
+                frames = 6;
+                textureId = "#enemy_walk";
+                action = Platform_Game.ACTION.WALK;
+            }
             this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
-            let img = document.querySelector("#enemy_idle");
+            let img = document.querySelector(textureId);
             let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
             Enemy.animations = {};
-            let sprite = new fudgeAid.SpriteSheetAnimation("Idle", spritesheet);
-            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
-            Enemy.animations[Platform_Game.ACTION.IDLE] = sprite;
-            this.setAnimation(Enemy.animations[Platform_Game.ACTION.IDLE]);
-            this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
+            let sprite = new fudgeAid.SpriteSheetAnimation(texture, spritesheet);
+            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), frames, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            Enemy.animations[action] = sprite;
+            this.setAnimation(Enemy.animations[action]);
+            // this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
         }
         serialize() {
             let serialization = {
@@ -325,12 +373,46 @@ var Platform_Editor;
             return serialization;
         }
         deserialize(_serialization) {
-            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), "walk");
             this.name = _serialization.name;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
         }
+        preProcessEnemy(floors) {
+            let closestDistance = Number.MAX_VALUE;
+            let nearestFloor;
+            for (let i = 0; i < floors.length; i++) {
+                let distance = fudge.Vector3.DIFFERENCE(this.mtxLocal.translation, floors[i].mtxLocal.translation);
+                if (distance.magnitudeSquared < closestDistance) {
+                    nearestFloor = i;
+                    closestDistance = distance.magnitudeSquared;
+                }
+            }
+            this.mtxLocal.translation = new fudge.Vector3(this.mtxLocal.translation.x, floors[nearestFloor].mtxLocal.translation.y + (floors[nearestFloor].mtxLocal.scaling.y / 2), 0);
+            fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+            this.findAdjacentFloors(floors[nearestFloor], floors, nearestFloor);
+            this.adjacentFloors.sort(this.compare);
+        }
+        removeListener() {
+            fudge.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+        }
+        findAdjacentFloors(startFloor, floors, thisIndex) {
+            floors.splice(thisIndex, 1);
+            this.adjacentFloors.push(startFloor);
+            for (let i = 0; i < floors.length; i++) {
+                let startFloorMtx = startFloor.mtxLocal;
+                let currentFloorMtx = floors[i].mtxLocal;
+                if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 &&
+                    Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
+                    this.findAdjacentFloors(floors[i], floors, i);
+                }
+            }
+        }
+        compare(floorA, floorB) {
+            return floorA.mtxLocal.translation.x - floorB.mtxLocal.translation.x;
+        }
     }
+    Enemy.speed = new fudge.Vector3(1, 0, 0);
     Platform_Editor.Enemy = Enemy;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
@@ -360,8 +442,6 @@ var Platform_Editor;
             let cmpMaterial = new fudge.ComponentMaterial(material);
             this.mtxLocal.scaleX(3);
             this.mtxLocal.scaleY(0.5);
-            // this.color = fudge.Color.CSS("LimeGreen");
-            // cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);
         }
         getRectWorld() {

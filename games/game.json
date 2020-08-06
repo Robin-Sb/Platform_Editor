@@ -34,15 +34,104 @@
             },
             "textureId": "#pavement_text"
           }
+        },
+        {
+          "Platform_Editor.Enemy": {
+            "name": "Enemy",
+            "translation": {
+              "data": {
+                "0": 7,
+                "1": 0.20000000298023224,
+                "2": 0.009999999776482582
+              }
+            }
+          }
+        },
+        {
+          "Platform_Editor.Floor": {
+            "name": "Floor",
+            "translation": {
+              "data": {
+                "0": 3,
+                "1": 0,
+                "2": 0.009999999776482582
+              }
+            },
+            "textureId": "#grass_text"
+          }
+        },
+        {
+          "Platform_Editor.Floor": {
+            "name": "Floor",
+            "translation": {
+              "data": {
+                "0": 6,
+                "1": 0,
+                "2": 0.009999999776482582
+              }
+            },
+            "textureId": "#grass_text"
+          }
+        },
+        {
+          "Platform_Editor.Floor": {
+            "name": "Floor",
+            "translation": {
+              "data": {
+                "0": 9,
+                "1": -1.5,
+                "2": 0.009999999776482582
+              }
+            },
+            "textureId": "#grass_text"
+          }
+        },
+        {
+          "Platform_Editor.Floor": {
+            "name": "Floor",
+            "translation": {
+              "data": {
+                "0": 16,
+                "1": 1.600000023841858,
+                "2": 0.009999999776482582
+              }
+            },
+            "textureId": "#grass_text"
+          }
+        },
+        {
+          "Platform_Editor.Floor": {
+            "name": "Floor",
+            "translation": {
+              "data": {
+                "0": 12.705000877380371,
+                "1": -0.20996509492397308,
+                "2": 0.009999999776482582
+              }
+            },
+            "textureId": "#grass_text"
+          }
+        },
+        {
+          "Platform_Editor.EndPole": {
+            "name": "EndPole",
+            "translation": {
+              "data": {
+                "0": 17.200000762939453,
+                "1": 2.799999952316284,
+                "2": 0.009999999776482582
+              }
+            }
+          }
         }
       ]
     }
   },
   "resources": {
-    "Material|2020-08-05T14:02:21.548Z|51825": {
+    "Material|2020-08-05T20:43:36.749Z|66675": {
       "ƒ.Material": {
         "name": "Tower",
-        "idResource": "Material|2020-08-05T14:02:21.548Z|51825",
+        "idResource": "Material|2020-08-05T20:43:36.749Z|66675",
         "shader": "ShaderFlat",
         "coat": {
           "ƒ.CoatColored": {
@@ -57,10 +146,10 @@
         }
       }
     },
-    "Material|2020-08-05T14:02:21.579Z|84087": {
+    "Material|2020-08-05T20:43:37.038Z|88771": {
       "ƒ.Material": {
         "name": "FloorMtr",
-        "idResource": "Material|2020-08-05T14:02:21.579Z|84087",
+        "idResource": "Material|2020-08-05T20:43:37.038Z|88771",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {
@@ -76,10 +165,10 @@
         }
       }
     },
-    "Material|2020-08-05T14:02:21.584Z|11403": {
+    "Material|2020-08-05T20:43:37.044Z|02599": {
       "ƒ.Material": {
         "name": "FloorMtr",
-        "idResource": "Material|2020-08-05T14:02:21.584Z|11403",
+        "idResource": "Material|2020-08-05T20:43:37.044Z|02599",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {
@@ -95,10 +184,10 @@
         }
       }
     },
-    "Material|2020-08-05T14:02:21.584Z|58417": {
+    "Material|2020-08-05T20:43:37.044Z|37220": {
       "ƒ.Material": {
         "name": "Enemy",
-        "idResource": "Material|2020-08-05T14:02:21.584Z|58417",
+        "idResource": "Material|2020-08-05T20:43:37.044Z|37220",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {
@@ -114,10 +203,10 @@
         }
       }
     },
-    "Material|2020-08-05T14:02:21.591Z|41244": {
+    "Material|2020-08-05T20:43:37.050Z|06543": {
       "ƒ.Material": {
         "name": "PoleMtr",
-        "idResource": "Material|2020-08-05T14:02:21.591Z|41244",
+        "idResource": "Material|2020-08-05T20:43:37.050Z|06543",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {
@@ -133,10 +222,124 @@
         }
       }
     },
-    "Material|2020-08-05T14:02:21.592Z|08990": {
+    "Material|2020-08-05T20:43:37.054Z|57645": {
       "ƒ.Material": {
         "name": "PoleMtr",
-        "idResource": "Material|2020-08-05T14:02:21.592Z|08990",
+        "idResource": "Material|2020-08-05T20:43:37.054Z|57645",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T20:43:39.578Z|47659": {
+      "ƒ.Material": {
+        "name": "Enemy",
+        "idResource": "Material|2020-08-05T20:43:39.578Z|47659",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Enemy",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T20:43:45.346Z|79921": {
+      "ƒ.Material": {
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T20:43:45.346Z|79921",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T20:43:50.313Z|00326": {
+      "ƒ.Material": {
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T20:43:50.313Z|00326",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T20:43:57.793Z|38191": {
+      "ƒ.Material": {
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T20:43:57.793Z|38191",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T20:44:06.026Z|65695": {
+      "ƒ.Material": {
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T20:44:06.026Z|65695",
+        "shader": "ShaderTexture",
+        "coat": {
+          "ƒ.CoatTextured": {
+            "name": "Coat",
+            "color": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            },
+            "texture": {}
+          }
+        }
+      }
+    },
+    "Material|2020-08-05T20:44:12.556Z|03618": {
+      "ƒ.Material": {
+        "name": "FloorMtr",
+        "idResource": "Material|2020-08-05T20:44:12.556Z|03618",
         "shader": "ShaderTexture",
         "coat": {
           "ƒ.CoatTextured": {

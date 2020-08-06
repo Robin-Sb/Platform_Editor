@@ -21,7 +21,7 @@ namespace Platform_Editor {
             viewport.activatePointerEvent(fudge.EVENT_POINTER.UP, true);
 
             viewport.addEventListener(fudge.EVENT_KEYBOARD.DOWN, this.handleKeyboard.bind(this));
-            viewport.activateKeyboardEvent(ƒ.EVENT_KEYBOARD.DOWN, true);
+            viewport.activateKeyboardEvent(fudge.EVENT_KEYBOARD.DOWN, true);
             viewport.setFocus(true);
 
             editorViewport.addEventListener(fudge.EVENT_POINTER.DOWN, this.pickEditorNode);

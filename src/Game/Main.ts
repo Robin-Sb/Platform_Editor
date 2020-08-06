@@ -56,6 +56,10 @@ namespace Platform_Game {
         viewport = new fudge.Viewport();
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
+        viewport.addEventListener(fudge.EVENT_KEYBOARD.DOWN, musisControl);
+        viewport.activateKeyboardEvent(fudge.EVENT_KEYBOARD.DOWN, true);
+        viewport.setFocus(true);
+
         if (graph.getChildrenByName("EndPole")[0].mtxLocal.translation.x < 0) {
             isRightSided = false;
         }
@@ -64,6 +68,11 @@ namespace Platform_Game {
             let tileY: number = floor.mtxLocal.translation.y;
             if (tileY < lowestTile) 
                 lowestTile = tileY;
+        }
+
+        let enemies: Platform_Editor.Enemy[] = <Platform_Editor.Enemy[]> graph.getChildrenByName("Enemy");
+        for (let enemy of enemies) {
+            enemy.preProcessEnemy(<Platform_Editor.Floor[]> graph.getChildrenByName("Floor"));
         }
 
         Player.generateSprite();
@@ -88,15 +97,22 @@ namespace Platform_Game {
 
     function processInput(): void {
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.A, fudge.KEYBOARD_CODE.ARROW_LEFT]))
-          player.act(ACTION.WALK, DIRECTION.LEFT);
+            player.act(ACTION.WALK, DIRECTION.LEFT);
         else if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.D, fudge.KEYBOARD_CODE.ARROW_RIGHT]))
-          player.act(ACTION.WALK, DIRECTION.RIGHT);
+            player.act(ACTION.WALK, DIRECTION.RIGHT);
         else
-          player.act(ACTION.IDLE);
+            player.act(ACTION.IDLE);
 
         if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.SPACE]))
             player.act(ACTION.JUMP);
     }
+
+    function musisControl(_event: fudge.EventKeyboard): void {
+        if (_event.code == fudge.KEYBOARD_CODE.M) {
+            audioComponents["Background"].play(false);
+        }
+    }
+
     function readSingleFile(event: any): void {
         var file = event.target.files[0];
         if (!file) {
@@ -107,7 +123,7 @@ namespace Platform_Game {
           var contents: string | ArrayBuffer = event.target.result; 
           let coreSerialization: Platform_Editor.Serialization = JSON.parse(contents.toString());
           fudge.Serializer.registerNamespace(Platform_Editor);
-          fudge.ResourceManager.deserialize(coreSerialization.resources);
+          //fudge.ResourceManager.deserialize(coreSerialization.resources);
           let reconstruction: fudge.Serializable = fudge.Serializer.deserialize(coreSerialization.graph);
           // let serialization: fudge.Serialization = fudge.Serializer.parse(contents.toString());
           // let reconstruction: fudge.Serializable = fudge.Serializer.deserialize(serialization);

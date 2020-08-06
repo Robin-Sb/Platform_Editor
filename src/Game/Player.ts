@@ -2,11 +2,6 @@ namespace Platform_Game {
 
     import fudge = FudgeCore;
     import fudgeAid = FudgeAid;
-
-  
-    export enum DIRECTION {
-      LEFT, RIGHT
-    }
   
     export class Player extends fudgeAid.NodeSprite {
         private static animations: fudgeAid.SpriteSheetAnimations;
@@ -31,12 +26,6 @@ namespace Platform_Game {
             let idleImg: HTMLImageElement = document.querySelector("#player_idle");
             let sprite: fudgeAid.SpriteSheetAnimation = Player.appendSprite(idleImg, ACTION.IDLE, 4);
             sprite.frames[2].timeScale = 10;            
-            // let idleSheet: fudge.CoatTextured = fudgeAid.createSpriteSheet("Walk", idleImg);
-
-            // sprite = new fudgeAid.SpriteSheetAnimation(ACTION.IDLE, idleSheet);
-            // sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
-            // Player.animations[ACTION.IDLE] = sprite;
-            
         }
 
         private static appendSprite(image: HTMLImageElement, action: ACTION, frames: number): fudgeAid.SpriteSheetAnimation {
@@ -124,9 +113,9 @@ namespace Platform_Game {
         }
 
        private checkEnemyCollision(): void {
-        let nodes: fudge.Node[] = viewport.getGraph().getChildrenByName("Enemy");
+        let nodes: Platform_Editor.Enemy[] = <Platform_Editor.Enemy[]> viewport.getGraph().getChildrenByName("Enemy");
         for (let enemy of nodes) {
-            let rect: fudge.Rectangle = (<Platform_Editor.Enemy> enemy).getRectWorld()[0]; 
+            let rect: fudge.Rectangle = enemy.getRectWorld()[0]; 
             let pivot: fudge.Vector2 = this.cmpTransform.local.translation.toVector2();
             pivot.y = pivot.y + this.cmpTransform.local.scaling.y / 2;
             let hit: boolean = rect.isInside(pivot);
@@ -134,6 +123,7 @@ namespace Platform_Game {
                 if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
                     audioComponents["EnemyHit"].play(true);
                     viewport.getGraph().removeChild(enemy);
+                    enemy.removeListener();
                 } else {
                     audioComponents["PlayerFail"].play(true);
                     alert("You lost!");

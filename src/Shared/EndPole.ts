@@ -9,7 +9,6 @@ namespace Platform_Editor {
 
         initialize(translation: fudge.Vector3 = new fudge.Vector3(0.7, -1, 0)): void {
             let base: fudge.Node = new fudge.Node("Base");
-            let standardY: number = -2;
             let sizeY: number = 2;
 
             let baseTransform: fudge.ComponentTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 0, 0)));
