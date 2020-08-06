@@ -29,8 +29,9 @@ var Platform_Editor;
         initializeEditorViewport();
         Platform_Editor.editorViewport.draw();
         // tslint:disable-next-line: no-unused-expression
-        new Platform_Editor.ViewportControl(cameraZ);
+        new Platform_Editor.ViewportControl();
         Platform_Editor.viewport.draw();
+        fudge.Serializer.registerNamespace(Platform_Editor);
     }
     function initializeEditorViewport() {
         const editorCanvas = document.querySelector("#editor_canvas");
@@ -65,22 +66,13 @@ var Platform_Editor;
         oldY = _event.canvasY;
     }
     function serializeGraph() {
-        if (graph.getChildrenByName("EndPole").length != 1) {
+        if (Platform_Editor.viewport.getGraph().getChildrenByName("EndPole").length != 1) {
             alert("The endpole must be set!");
             return;
         }
-        fudge.Serializer.registerNamespace(Platform_Editor);
-        let serializedGraph = fudge.Serializer.serialize(graph);
+        let serializedGraph = fudge.Serializer.serialize(Platform_Editor.viewport.getGraph());
         let json = fudge.Serializer.stringify(serializedGraph);
-        let serializedResources = fudge.ResourceManager.serialize();
-        let resourceString = fudge.Serializer.stringify(serializedResources); // JSON.stringify(resources);
-        let serialization = new Platform_Editor.Serialization();
-        serialization.graph = serializedGraph;
-        serialization.resources = serializedResources;
-        let finalJson = JSON.stringify(serialization, null, 2);
-        console.log(resourceString);
-        console.log(json);
-        save(finalJson, "game.json");
+        save(json, "game.json");
     }
     function save(_content, _filename) {
         let blob = new Blob([_content], { type: "text/plain" });
@@ -110,13 +102,30 @@ var Platform_Editor;
 (function (Platform_Editor) {
     var fudge = FudgeCore;
     class ViewportControl {
-        // look at mutators again and serialization
-        //private states: Array<{funct: (node: fudge.Node) => void, object: fudge.Node}> = new Array<{funct: (node: fudge.Node) => void, object: fudge.Node}>();
-        //private states: Array<fudge.Node> = new Array<fudge.Node>();
-        constructor(cameraZ) {
+        constructor() {
+            // look at mutators again and serialization
+            //private states: Array<{funct: (node: fudge.Node) => void, object: fudge.Node}> = new Array<{funct: (node: fudge.Node) => void, object: fudge.Node}>();
+            //private states: Array<{node: fudge.Node, oldState: string}> = [];
+            this.states = [];
+            this.control = (event) => {
+                if (event.ctrlKey && event.key === "z") {
+                    if (this.states.length == 0)
+                        return;
+                    let state = this.states.pop();
+                    Platform_Editor.viewport.setGraph(fudge.Serializer.deserialize(state.serialization));
+                    if (state.endPoleSet) {
+                        let newPole = new Platform_Editor.EndPole();
+                        newPole.initialize();
+                        Platform_Editor.editorViewport.getGraph().addChild(newPole);
+                        Platform_Editor.editorViewport.draw();
+                    }
+                    Platform_Editor.viewport.draw();
+                }
+            };
             this.pickSceneNode = (_event) => {
                 let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.viewport, Platform_Editor.viewport.getGraph().getChildren());
                 if (pickedNodes) {
+                    this.setState(false);
                     this.selectedNode = pickedNodes[0];
                 }
             };
@@ -144,17 +153,6 @@ var Platform_Editor;
                     Platform_Editor.viewport.draw();
                 }
             };
-            // private getRayEnd(_mousepos: fudge.Vector2): fudge.Vector3 {
-            //     let posProjection: fudge.Vector2 = viewport.pointClientToProjection(_mousepos);
-            //     let ray: fudge.Ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
-            //     let camera: fudge.ComponentCamera = viewport.camera;
-            //     // scale by z direction of camera
-            //     ray.direction.scale(this.cameraZ);
-            //     ray.origin.transform(camera.pivot);
-            //     ray.direction.transform(camera.pivot, false);
-            //     let rayEnd: fudge.Vector3 = fudge.Vector3.SUM(ray.origin, ray.direction);
-            //     return rayEnd;
-            // }
             this.pickEditorNode = (_event) => {
                 let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.editorViewport, Platform_Editor.editorViewport.getGraph().getChildren());
                 // maybe think of some logic to find the most senseful item (z-index?)
@@ -179,7 +177,6 @@ var Platform_Editor;
                 Platform_Editor.viewport.draw();
                 Platform_Editor.editorViewport.draw();
             };
-            this.cameraZ = cameraZ;
             Platform_Editor.viewport.addEventListener("\u0192pointermove" /* MOVE */, this.dragNode);
             Platform_Editor.viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
             Platform_Editor.viewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickSceneNode);
@@ -191,20 +188,13 @@ var Platform_Editor;
             Platform_Editor.viewport.setFocus(true);
             Platform_Editor.editorViewport.addEventListener("\u0192pointerdown" /* DOWN */, this.pickEditorNode);
             Platform_Editor.editorViewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
-            //document.addEventListener("keydown", this.control.bind(viewport.getGraph()));
+            document.addEventListener("keydown", this.control.bind(Platform_Editor.viewport.getGraph()));
         }
-        // public appendState(state: fudge.Node[]): void {
-        //     this.states.push(state);
-        // }
-        // private control = (event: KeyboardEvent): void => {
-        //     if (event.ctrlKey && event.key === "z") {
-        //         this.this.states[this.states.length - 1].funct
-        //         viewport.draw();
-        //     }
-        // }
         convertToMainViewport(selectedNode) {
             Platform_Editor.editorViewport.getGraph().removeChild(selectedNode);
             selectedNode.mtxLocal.translation = new fudge.Vector3(Platform_Editor.viewport.camera.pivot.translation.x, Platform_Editor.viewport.camera.pivot.translation.y, 0.01);
+            let isEndPool = selectedNode instanceof Platform_Editor.EndPole;
+            isEndPool ? this.setState(true) : this.setState(false);
             Platform_Editor.viewport.getGraph().addChild(selectedNode);
         }
         handleKeyboard(_event) {
@@ -220,6 +210,15 @@ var Platform_Editor;
                     this.selectedNode = null;
                     Platform_Editor.viewport.draw();
                 }
+            }
+        }
+        setState(endPoleSet) {
+            this.states.push({
+                serialization: fudge.Serializer.serialize(Platform_Editor.viewport.getGraph()),
+                endPoleSet: endPoleSet
+            });
+            if (this.states.length > 5) {
+                this.states.splice(0, 1);
             }
         }
         pickNodes(x, y, usedViewport, nodes) {
@@ -355,6 +354,7 @@ var Platform_Editor;
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
         initialize(translation = new fudge.Vector3(-0.5, -1, 0), texture = "idle") {
+            this.texture = texture;
             let frames;
             let textureId;
             let action;
@@ -376,17 +376,17 @@ var Platform_Editor;
             sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), frames, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
             Enemy.animations[action] = sprite;
             this.setAnimation(Enemy.animations[action]);
-            // this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
         }
         serialize() {
             let serialization = {
                 name: this.name,
-                translation: this.mtxLocal.translation
+                translation: this.mtxLocal.translation,
+                texture: this.texture
             };
             return serialization;
         }
         deserialize(_serialization) {
-            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), "walk");
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), _serialization.texture);
             this.name = _serialization.name;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
@@ -428,10 +428,6 @@ var Platform_Editor;
                         }
                     }
                 }
-                // if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 && 
-                //     Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
-                //         this.findAdjacentFloors(floors[i], floors, i);
-                // }
             }
         }
         compare(floorA, floorB) {
@@ -477,24 +473,20 @@ var Platform_Editor;
             let serialization = {
                 name: this.name,
                 translation: this.mtxLocal.translation,
-                textureId: this.textureId
+                textureId: this.textureId,
+                isPickable: this.isPickable
             };
             return serialization;
         }
         deserialize(_serialization) {
             this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), _serialization.textureId);
             this.name = _serialization.name;
+            this._isPickable = _serialization.isPickable;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
         }
     }
     Platform_Editor.Floor = Floor;
-})(Platform_Editor || (Platform_Editor = {}));
-var Platform_Editor;
-(function (Platform_Editor) {
-    class Serialization {
-    }
-    Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {

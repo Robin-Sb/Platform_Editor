@@ -44,7 +44,8 @@ namespace Platform_Editor {
             let serialization: fudge.Serialization = {
                 name: this.name,
                 translation: this.mtxLocal.translation,
-                textureId: this.textureId
+                textureId: this.textureId,
+                isPickable: this.isPickable
             };
             return serialization;
         }
@@ -52,6 +53,7 @@ namespace Platform_Editor {
         public deserialize(_serialization: fudge.Serialization): fudge.Serializable {
             this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), _serialization.textureId);
             this.name = _serialization.name;
+            this._isPickable = _serialization.isPickable;
             this.dispatchEvent(new Event(fudge.EVENT.NODE_DESERIALIZED));
 
             return this;

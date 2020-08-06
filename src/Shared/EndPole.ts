@@ -52,7 +52,7 @@ namespace Platform_Editor {
             let serialization: fudge.Serialization = {
                 name: this.name,
                 translation: this.mtxLocal.translation
-            }
+            };
             return serialization;
         }
 

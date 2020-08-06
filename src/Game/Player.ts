@@ -59,8 +59,7 @@ namespace Platform_Game {
             this.action = _action;
             this.show(_action);
         }
-
-
+        
         public show(_action: ACTION): void {
             //show only the animation defined for the action
             if (_action == ACTION.JUMP)
@@ -69,12 +68,15 @@ namespace Platform_Game {
         }
 
         private update = (_event: fudge.Eventƒ): void => {
+            this.checkEnemyCollision();
+            let oldY: number = this.mtxLocal.translation.y;
             let timeFrame: number = fudge.Loop.timeFrameGame / 500;
             this.speed.y += Player.gravity.y * timeFrame;
             let distance: fudge.Vector3 = fudge.Vector3.SCALE(this.speed, timeFrame);
             this.cmpTransform.local.translate(distance);
       
-            this.checkCollision();
+            this.checkCollision(oldY); 
+
             if (this.mtxLocal.translation.y < lowestTile - 5) {
                 alert("You lost!");
                 fudge.Loop.stop();
@@ -95,12 +97,13 @@ namespace Platform_Game {
                 alert("You won!");
                 fudge.Loop.stop();
             }
-            this.checkEnemyCollision();
         }
 
-        private checkCollision(): void {
+        private checkCollision(oldY: number): void {
             let nodes: fudge.Node[] = viewport.getGraph().getChildrenByName("Floor");
-            for (let floor of nodes) {                
+            for (let floor of nodes) {
+                if (oldY < floor.mtxLocal.translation.y) 
+                    continue;                
                 let rect: fudge.Rectangle = (<Platform_Editor.Floor> floor).getRectWorld()[0];
                 let hit: boolean = rect.isInside(this.cmpTransform.local.translation.toVector2());
                 if (hit) {
@@ -112,25 +115,25 @@ namespace Platform_Game {
             }
         }
 
-       private checkEnemyCollision(): void {
-        let nodes: Platform_Editor.Enemy[] = <Platform_Editor.Enemy[]> viewport.getGraph().getChildrenByName("Enemy");
-        for (let enemy of nodes) {
-            let rect: fudge.Rectangle = enemy.getRectWorld()[0]; 
-            let pivot: fudge.Vector2 = this.cmpTransform.local.translation.toVector2();
-            pivot.y = pivot.y + this.cmpTransform.local.scaling.y / 2;
-            let hit: boolean = rect.isInside(pivot);
-            if (hit) {
-                if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
-                    audioComponents["EnemyHit"].play(true);
-                    viewport.getGraph().removeChild(enemy);
-                    enemy.removeListener();
-                } else {
-                    audioComponents["PlayerFail"].play(true);
-                    alert("You lost!");
-                    fudge.Loop.stop();
+        private checkEnemyCollision(): void {
+            let nodes: Platform_Editor.Enemy[] = <Platform_Editor.Enemy[]> viewport.getGraph().getChildrenByName("Enemy");
+            for (let enemy of nodes) {
+                let rect: fudge.Rectangle = enemy.getRectWorld()[0]; 
+                let pivot: fudge.Vector2 = this.cmpTransform.local.translation.toVector2();
+                pivot.y = pivot.y + this.cmpTransform.local.scaling.y / 2;
+                let hit: boolean = rect.isInside(pivot);
+                if (hit) {
+                    if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y / 2 - 0.12) {
+                        audioComponents["EnemyHit"].play(true);
+                        viewport.getGraph().removeChild(enemy);
+                        enemy.removeListener();
+                    } else {
+                        audioComponents["PlayerFail"].play(true);
+                        alert("You lost!");
+                        fudge.Loop.stop();
+                    }
                 }
             }
-        }
-       } 
+        } 
     }
 }

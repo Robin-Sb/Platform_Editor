@@ -64,7 +64,7 @@ var Platform_Game;
         Platform_Game.viewport.getGraph().addChild(player);
         Platform_Game.viewport.draw();
         fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
-        fudge.Loop.start(fudge.LOOP_MODE.TIME_GAME, 60);
+        fudge.Loop.start(fudge.LOOP_MODE.TIME_GAME, 30);
     }
     function update() {
         processInput();
@@ -97,12 +97,9 @@ var Platform_Game;
         var reader = new FileReader();
         reader.onload = function (event) {
             var contents = event.target.result;
-            let coreSerialization = JSON.parse(contents.toString());
             fudge.Serializer.registerNamespace(Platform_Editor);
-            //fudge.ResourceManager.deserialize(coreSerialization.resources);
-            let reconstruction = fudge.Serializer.deserialize(coreSerialization.graph);
-            // let serialization: fudge.Serialization = fudge.Serializer.parse(contents.toString());
-            // let reconstruction: fudge.Serializable = fudge.Serializer.deserialize(serialization);
+            let serialization = fudge.Serializer.parse(contents.toString());
+            let reconstruction = fudge.Serializer.deserialize(serialization);
             let graph = reconstruction;
             initialize(graph);
         };
@@ -118,11 +115,13 @@ var Platform_Game;
             super(_name);
             this.speed = fudge.Vector3.ZERO();
             this.update = (_event) => {
+                this.checkEnemyCollision();
+                let oldY = this.mtxLocal.translation.y;
                 let timeFrame = fudge.Loop.timeFrameGame / 500;
                 this.speed.y += Player.gravity.y * timeFrame;
                 let distance = fudge.Vector3.SCALE(this.speed, timeFrame);
                 this.cmpTransform.local.translate(distance);
-                this.checkCollision();
+                this.checkCollision(oldY);
                 if (this.mtxLocal.translation.y < Platform_Game.lowestTile - 5) {
                     alert("You lost!");
                     fudge.Loop.stop();
@@ -144,7 +143,6 @@ var Platform_Game;
                     alert("You won!");
                     fudge.Loop.stop();
                 }
-                this.checkEnemyCollision();
             };
             this.addComponent(new fudge.ComponentTransform());
             this.show(Platform_Game.ACTION.IDLE);
@@ -193,9 +191,11 @@ var Platform_Game;
                 return;
             this.setAnimation(Player.animations[_action]);
         }
-        checkCollision() {
+        checkCollision(oldY) {
             let nodes = Platform_Game.viewport.getGraph().getChildrenByName("Floor");
             for (let floor of nodes) {
+                if (oldY < floor.mtxLocal.translation.y)
+                    continue;
                 let rect = floor.getRectWorld()[0];
                 let hit = rect.isInside(this.cmpTransform.local.translation.toVector2());
                 if (hit) {
@@ -214,7 +214,7 @@ var Platform_Game;
                 pivot.y = pivot.y + this.cmpTransform.local.scaling.y / 2;
                 let hit = rect.isInside(pivot);
                 if (hit) {
-                    if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y - 0.6) {
+                    if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y / 2 - 0.12) {
                         Platform_Game.audioComponents["EnemyHit"].play(true);
                         Platform_Game.viewport.getGraph().removeChild(enemy);
                         enemy.removeListener();
@@ -341,39 +341,30 @@ var Platform_Editor;
         getRectWorld() {
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
-        initialize(translation = new fudge.Vector3(-0.5, -1, 0), texture = "idle") {
-            let frames;
-            let textureId;
-            let action;
-            if (texture == "idle") {
-                frames = 4;
-                textureId = "#enemy_idle";
-                action = Platform_Game.ACTION.IDLE;
-            }
-            else if (texture == "walk") {
-                frames = 6;
-                textureId = "#enemy_walk";
-                action = Platform_Game.ACTION.WALK;
-            }
+        initialize(translation = new fudge.Vector3(-0.5, -1, 0)) {
             this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
-            let img = document.querySelector(textureId);
-            let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
             Enemy.animations = {};
-            let sprite = new fudgeAid.SpriteSheetAnimation(texture, spritesheet);
-            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), frames, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
-            Enemy.animations[action] = sprite;
-            this.setAnimation(Enemy.animations[action]);
-            // this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
+            let img = document.querySelector("#enemy_idle");
+            let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
+            let sprite = new fudgeAid.SpriteSheetAnimation("Idle", spritesheet);
+            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            Enemy.animations[Platform_Game.ACTION.IDLE] = sprite;
+            let walkImg = document.querySelector("#enemy_walk");
+            let walksheet = fudgeAid.createSpriteSheet("Enemy", walkImg);
+            let walkSprite = new fudgeAid.SpriteSheetAnimation("Walk", walksheet);
+            walkSprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 6, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            Enemy.animations[Platform_Game.ACTION.WALK] = walkSprite;
+            this.setAnimation(Enemy.animations[Platform_Game.ACTION.IDLE]);
         }
         serialize() {
             let serialization = {
                 name: this.name,
-                translation: this.mtxLocal.translation
+                translation: this.mtxLocal.translation,
             };
             return serialization;
         }
         deserialize(_serialization) {
-            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), "walk");
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
             this.name = _serialization.name;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
@@ -392,6 +383,7 @@ var Platform_Editor;
             fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
             this.findAdjacentFloors(floors[nearestFloor], floors, nearestFloor);
             this.adjacentFloors.sort(this.compare);
+            this.setAnimation(Enemy.animations[Platform_Game.ACTION.WALK]);
         }
         removeListener() {
             fudge.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.update);
@@ -403,22 +395,17 @@ var Platform_Editor;
                 let startFloorMtx = startFloor.mtxLocal;
                 let currentFloorMtx = floors[i].mtxLocal;
                 if (Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
-                    let difference = currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x;
                     if (startFloorMtx.translation.x > currentFloorMtx.translation.x) {
-                        if (difference >= 0) {
+                        if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x >= 0) {
                             this.findAdjacentFloors(floors[i], floors, i);
                         }
                     }
                     else {
-                        if (difference <= 0) {
+                        if (currentFloorMtx.translation.x - currentFloorMtx.scaling.x / 2 - startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0) {
                             this.findAdjacentFloors(floors[i], floors, i);
                         }
                     }
                 }
-                // if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 && 
-                //     Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
-                //         this.findAdjacentFloors(floors[i], floors, i);
-                // }
             }
         }
         compare(floorA, floorB) {
@@ -464,24 +451,20 @@ var Platform_Editor;
             let serialization = {
                 name: this.name,
                 translation: this.mtxLocal.translation,
-                textureId: this.textureId
+                textureId: this.textureId,
+                isPickable: this.isPickable
             };
             return serialization;
         }
         deserialize(_serialization) {
             this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), _serialization.textureId);
             this.name = _serialization.name;
+            this._isPickable = _serialization.isPickable;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
         }
     }
     Platform_Editor.Floor = Floor;
-})(Platform_Editor || (Platform_Editor = {}));
-var Platform_Editor;
-(function (Platform_Editor) {
-    class Serialization {
-    }
-    Platform_Editor.Serialization = Serialization;
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {

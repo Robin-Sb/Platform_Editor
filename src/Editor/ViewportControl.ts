@@ -2,15 +2,14 @@ namespace Platform_Editor {
     import fudge = FudgeCore;
     export class ViewportControl {
         private selectedNode: PickableNode;
-        private cameraZ: number;
 
         // look at mutators again and serialization
 
         //private states: Array<{funct: (node: fudge.Node) => void, object: fudge.Node}> = new Array<{funct: (node: fudge.Node) => void, object: fudge.Node}>();
-        //private states: Array<fudge.Node> = new Array<fudge.Node>();
+        //private states: Array<{node: fudge.Node, oldState: string}> = [];
+        private states: Array<{serialization: fudge.Serialization, endPoleSet: boolean}> = [];
 
-        constructor(cameraZ: number) {
-            this.cameraZ = cameraZ;
+        constructor() {
             viewport.addEventListener(fudge.EVENT_POINTER.MOVE, this.dragNode);
             viewport.activatePointerEvent(fudge.EVENT_POINTER.MOVE, true);
     
@@ -26,26 +25,31 @@ namespace Platform_Editor {
 
             editorViewport.addEventListener(fudge.EVENT_POINTER.DOWN, this.pickEditorNode);
             editorViewport.activatePointerEvent(fudge.EVENT_POINTER.DOWN, true);
-
-            //document.addEventListener("keydown", this.control.bind(viewport.getGraph()));
+            document.addEventListener("keydown", this.control.bind(viewport.getGraph()));
         }
 
-        // public appendState(state: fudge.Node[]): void {
-        //     this.states.push(state);
-        // }
+        private control = (event: KeyboardEvent): void => {
+            if (event.ctrlKey && event.key === "z") { 
+                if (this.states.length == 0) 
+                    return;
+                let state: {serialization: fudge.Serialization, endPoleSet: boolean} = this.states.pop();
+                viewport.setGraph(<fudge.Node> fudge.Serializer.deserialize(state.serialization));
 
-
-        // private control = (event: KeyboardEvent): void => {
-        //     if (event.ctrlKey && event.key === "z") {
-        //         this.this.states[this.states.length - 1].funct
-
-        //         viewport.draw();
-        //     }
-        // }
+                if (state.endPoleSet) {
+                    let newPole: EndPole = new EndPole();
+                    newPole.initialize();
+                    editorViewport.getGraph().addChild(newPole);
+                    editorViewport.draw();
+                }
+                viewport.draw();
+            }
+        }
 
         private convertToMainViewport(selectedNode: fudge.Node): void {
             editorViewport.getGraph().removeChild(selectedNode);
             selectedNode.mtxLocal.translation = new fudge.Vector3(viewport.camera.pivot.translation.x, viewport.camera.pivot.translation.y, 0.01); 
+            let isEndPool: boolean = selectedNode instanceof EndPole; 
+            isEndPool ? this.setState(true) : this.setState(false);
             viewport.getGraph().addChild(selectedNode);
         }
     
@@ -53,6 +57,7 @@ namespace Platform_Editor {
             let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, viewport, <PickableNode[]> viewport.getGraph().getChildren());
     
             if (pickedNodes) {
+                this.setState(false);
                 this.selectedNode = pickedNodes[0];
             }
         }
@@ -79,7 +84,6 @@ namespace Platform_Editor {
                     translation.y = Math.round(translation.y * 10) / 10;   
                     this.selectedNode.mtxLocal.translation = new fudge.Vector3(translation.x, translation.y, 0.01);
                 }
-    
                 this.selectedNode = null;
                 viewport.draw();
             }
@@ -100,20 +104,16 @@ namespace Platform_Editor {
                 }
             }
         }
-    
-        // private getRayEnd(_mousepos: fudge.Vector2): fudge.Vector3 {
-        //     let posProjection: fudge.Vector2 = viewport.pointClientToProjection(_mousepos);
-        //     let ray: fudge.Ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
-        //     let camera: fudge.ComponentCamera = viewport.camera;
-    
-        //     // scale by z direction of camera
-        //     ray.direction.scale(this.cameraZ);
-        //     ray.origin.transform(camera.pivot);
-        //     ray.direction.transform(camera.pivot, false);
-    
-        //     let rayEnd: fudge.Vector3 = fudge.Vector3.SUM(ray.origin, ray.direction);
-        //     return rayEnd;
-        // }
+
+        private setState(endPoleSet: boolean): void {
+            this.states.push({
+                serialization: fudge.Serializer.serialize(viewport.getGraph()), 
+                endPoleSet: endPoleSet });
+
+            if (this.states.length > 5) {
+                this.states.splice(0, 1);
+            }
+        }
     
         private pickEditorNode = (_event: fudge.EventPointer): void => {
             let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, editorViewport, <PickableNode[]> editorViewport.getGraph().getChildren());

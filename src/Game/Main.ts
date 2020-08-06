@@ -82,7 +82,7 @@ namespace Platform_Game {
         viewport.draw();
 
         fudge.Loop.addEventListener(fudge.EVENT.LOOP_FRAME, update);
-        fudge.Loop.start(fudge.LOOP_MODE.TIME_GAME, 60);
+        fudge.Loop.start(fudge.LOOP_MODE.TIME_GAME, 30);
     }
 
     function update(): void {
@@ -121,12 +121,9 @@ namespace Platform_Game {
         var reader: FileReader  = new FileReader();
         reader.onload = function(event) {
           var contents: string | ArrayBuffer = event.target.result; 
-          let coreSerialization: Platform_Editor.Serialization = JSON.parse(contents.toString());
           fudge.Serializer.registerNamespace(Platform_Editor);
-          //fudge.ResourceManager.deserialize(coreSerialization.resources);
-          let reconstruction: fudge.Serializable = fudge.Serializer.deserialize(coreSerialization.graph);
-          // let serialization: fudge.Serialization = fudge.Serializer.parse(contents.toString());
-          // let reconstruction: fudge.Serializable = fudge.Serializer.deserialize(serialization);
+          let serialization: fudge.Serialization = fudge.Serializer.parse(contents.toString());
+          let reconstruction: fudge.Serializable = fudge.Serializer.deserialize(serialization);
           let graph: fudge.Node = <fudge.Node> reconstruction;
           initialize(graph);
         };

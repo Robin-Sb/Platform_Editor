@@ -38,14 +38,13 @@ namespace Platform_Editor {
         viewport.addEventListener(fudge.EVENT_POINTER.MOVE, pointerMove);
         viewport.activatePointerEvent(fudge.EVENT_POINTER.MOVE, true);
 
-
         initializeEditorViewport();
         editorViewport.draw();
 
         // tslint:disable-next-line: no-unused-expression
-        new ViewportControl(cameraZ);
-
+        new ViewportControl();
         viewport.draw();
+        fudge.Serializer.registerNamespace(Platform_Editor);
     }
 
     function initializeEditorViewport(): void {
@@ -87,22 +86,13 @@ namespace Platform_Editor {
     }
 
     function serializeGraph(): void {
-        if (graph.getChildrenByName("EndPole").length != 1) {
+        if (viewport.getGraph().getChildrenByName("EndPole").length != 1) {
             alert("The endpole must be set!");
             return;
         }
-        fudge.Serializer.registerNamespace(Platform_Editor);
-        let serializedGraph: fudge.Serialization = fudge.Serializer.serialize(graph);
+        let serializedGraph: fudge.Serialization = fudge.Serializer.serialize(viewport.getGraph());
         let json: string = fudge.Serializer.stringify(serializedGraph);
-        let serializedResources: fudge.SerializationOfResources = fudge.ResourceManager.serialize();
-        let resourceString: string = fudge.Serializer.stringify(serializedResources); // JSON.stringify(resources);
-        let serialization: Serialization = new Serialization();
-        serialization.graph = serializedGraph;
-        serialization.resources = serializedResources;
-        let finalJson: string = JSON.stringify(serialization, null, 2);
-        console.log(resourceString);
-        console.log(json);
-        save(finalJson, "game.json");
+        save(json, "game.json");
     }
 
     function save(_content: string, _filename: string): void {
