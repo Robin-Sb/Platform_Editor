@@ -234,20 +234,20 @@ var Platform_Game;
 })(Platform_Game || (Platform_Game = {}));
 var Platform_Game;
 (function (Platform_Game) {
-    let DIRECTION;
-    (function (DIRECTION) {
-        DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
-        DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
-    })(DIRECTION = Platform_Game.DIRECTION || (Platform_Game.DIRECTION = {}));
-})(Platform_Game || (Platform_Game = {}));
-var Platform_Game;
-(function (Platform_Game) {
     let ACTION;
     (function (ACTION) {
         ACTION["IDLE"] = "Idle";
         ACTION["WALK"] = "Walk";
         ACTION["JUMP"] = "Jump";
     })(ACTION = Platform_Game.ACTION || (Platform_Game.ACTION = {}));
+})(Platform_Game || (Platform_Game = {}));
+var Platform_Game;
+(function (Platform_Game) {
+    let DIRECTION;
+    (function (DIRECTION) {
+        DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
+        DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
+    })(DIRECTION = Platform_Game.DIRECTION || (Platform_Game.DIRECTION = {}));
 })(Platform_Game || (Platform_Game = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
@@ -402,10 +402,23 @@ var Platform_Editor;
             for (let i = 0; i < floors.length; i++) {
                 let startFloorMtx = startFloor.mtxLocal;
                 let currentFloorMtx = floors[i].mtxLocal;
-                if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 &&
-                    Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
-                    this.findAdjacentFloors(floors[i], floors, i);
+                if (Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
+                    let difference = currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x;
+                    if (startFloorMtx.translation.x > currentFloorMtx.translation.x) {
+                        if (difference >= 0) {
+                            this.findAdjacentFloors(floors[i], floors, i);
+                        }
+                    }
+                    else {
+                        if (difference <= 0) {
+                            this.findAdjacentFloors(floors[i], floors, i);
+                        }
+                    }
                 }
+                // if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 && 
+                //     Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
+                //         this.findAdjacentFloors(floors[i], floors, i);
+                // }
             }
         }
         compare(floorA, floorB) {

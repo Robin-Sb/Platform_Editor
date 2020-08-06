@@ -8,8 +8,7 @@
       ]
     }, "files": [
         "Main.ts",
-        "Player.ts",
-        "Direction.ts"
+        "Player.ts"
     ], "include": [
         "../Shared/*"
     ]

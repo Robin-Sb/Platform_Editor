@@ -93,10 +93,22 @@ namespace Platform_Editor {
                 let startFloorMtx: fudge.Matrix4x4 = startFloor.mtxLocal;
                 let currentFloorMtx: fudge.Matrix4x4 = floors[i].mtxLocal;
 
-                if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 && 
-                    Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
-                        this.findAdjacentFloors(floors[i], floors, i);
+                if (Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
+                    let difference: number = currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x;
+                    if (startFloorMtx.translation.x > currentFloorMtx.translation.x) {
+                        if (difference >= 0) {
+                            this.findAdjacentFloors(floors[i], floors, i);
+                        }
+                    } else {
+                        if (difference <= 0) {
+                            this.findAdjacentFloors(floors[i], floors, i);
+                        }
+                    }
                 }
+                // if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 && 
+                //     Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
+                //         this.findAdjacentFloors(floors[i], floors, i);
+                // }
             }
         }
 

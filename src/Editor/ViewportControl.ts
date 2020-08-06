@@ -60,12 +60,11 @@ namespace Platform_Editor {
         private dragNode = (_event: fudge.EventPointer): void => {
             let posMouse: fudge.Vector2 = new fudge.Vector2(_event.canvasX, _event.canvasY);
             if (this.selectedNode) {
-                // let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                // cmpMaterial.clrPrimary = fudge.Color.CSS("red");
+                let ray: fudge.Ray = viewport.getRayFromClient(posMouse);
+                let intersection: fudge.Vector3 = ray.intersectPlane(this.selectedNode.mtxLocal.translation, new fudge.Vector3(0, 0, 1));
 
-                let rayEnd: fudge.Vector3 = this.getRayEnd(posMouse);
                 let cmpTransform: fudge.ComponentTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
-                cmpTransform.local.translation = new fudge.Vector3(rayEnd.x, rayEnd.y, 0.01);
+                cmpTransform.local.translation = new fudge.Vector3(intersection.x, intersection.y, 0.01);
                 viewport.draw();
             }
         }
@@ -102,19 +101,19 @@ namespace Platform_Editor {
             }
         }
     
-        private getRayEnd(_mousepos: fudge.Vector2): fudge.Vector3 {
-            let posProjection: fudge.Vector2 = viewport.pointClientToProjection(_mousepos);
-            let ray: fudge.Ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
-            let camera: fudge.ComponentCamera = viewport.camera;
+        // private getRayEnd(_mousepos: fudge.Vector2): fudge.Vector3 {
+        //     let posProjection: fudge.Vector2 = viewport.pointClientToProjection(_mousepos);
+        //     let ray: fudge.Ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
+        //     let camera: fudge.ComponentCamera = viewport.camera;
     
-            // scale by z direction of camera
-            ray.direction.scale(this.cameraZ);
-            ray.origin.transform(camera.pivot);
-            ray.direction.transform(camera.pivot, false);
+        //     // scale by z direction of camera
+        //     ray.direction.scale(this.cameraZ);
+        //     ray.origin.transform(camera.pivot);
+        //     ray.direction.transform(camera.pivot, false);
     
-            let rayEnd: fudge.Vector3 = fudge.Vector3.SUM(ray.origin, ray.direction);
-            return rayEnd;
-        }
+        //     let rayEnd: fudge.Vector3 = fudge.Vector3.SUM(ray.origin, ray.direction);
+        //     return rayEnd;
+        // }
     
         private pickEditorNode = (_event: fudge.EventPointer): void => {
             let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, editorViewport, <PickableNode[]> editorViewport.getGraph().getChildren());

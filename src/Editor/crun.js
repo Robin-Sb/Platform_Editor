@@ -123,11 +123,10 @@ var Platform_Editor;
             this.dragNode = (_event) => {
                 let posMouse = new fudge.Vector2(_event.canvasX, _event.canvasY);
                 if (this.selectedNode) {
-                    // let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                    // cmpMaterial.clrPrimary = fudge.Color.CSS("red");
-                    let rayEnd = this.getRayEnd(posMouse);
+                    let ray = Platform_Editor.viewport.getRayFromClient(posMouse);
+                    let intersection = ray.intersectPlane(this.selectedNode.mtxLocal.translation, new fudge.Vector3(0, 0, 1));
                     let cmpTransform = this.selectedNode.getComponent(fudge.ComponentTransform);
-                    cmpTransform.local.translation = new fudge.Vector3(rayEnd.x, rayEnd.y, 0.01);
+                    cmpTransform.local.translation = new fudge.Vector3(intersection.x, intersection.y, 0.01);
                     Platform_Editor.viewport.draw();
                 }
             };
@@ -145,6 +144,17 @@ var Platform_Editor;
                     Platform_Editor.viewport.draw();
                 }
             };
+            // private getRayEnd(_mousepos: fudge.Vector2): fudge.Vector3 {
+            //     let posProjection: fudge.Vector2 = viewport.pointClientToProjection(_mousepos);
+            //     let ray: fudge.Ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
+            //     let camera: fudge.ComponentCamera = viewport.camera;
+            //     // scale by z direction of camera
+            //     ray.direction.scale(this.cameraZ);
+            //     ray.origin.transform(camera.pivot);
+            //     ray.direction.transform(camera.pivot, false);
+            //     let rayEnd: fudge.Vector3 = fudge.Vector3.SUM(ray.origin, ray.direction);
+            //     return rayEnd;
+            // }
             this.pickEditorNode = (_event) => {
                 let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.editorViewport, Platform_Editor.editorViewport.getGraph().getChildren());
                 // maybe think of some logic to find the most senseful item (z-index?)
@@ -212,17 +222,6 @@ var Platform_Editor;
                 }
             }
         }
-        getRayEnd(_mousepos) {
-            let posProjection = Platform_Editor.viewport.pointClientToProjection(_mousepos);
-            let ray = new fudge.Ray(new fudge.Vector3(-posProjection.x, posProjection.y, 1));
-            let camera = Platform_Editor.viewport.camera;
-            // scale by z direction of camera
-            ray.direction.scale(this.cameraZ);
-            ray.origin.transform(camera.pivot);
-            ray.direction.transform(camera.pivot, false);
-            let rayEnd = fudge.Vector3.SUM(ray.origin, ray.direction);
-            return rayEnd;
-        }
         pickNodes(x, y, usedViewport, nodes) {
             let posMouse = new fudge.Vector2(x, y);
             let ray = usedViewport.getRayFromClient(posMouse);
@@ -255,6 +254,14 @@ var Platform_Game;
         ACTION["JUMP"] = "Jump";
     })(ACTION = Platform_Game.ACTION || (Platform_Game.ACTION = {}));
 })(Platform_Game || (Platform_Game = {}));
+var Platform_Game;
+(function (Platform_Game) {
+    let DIRECTION;
+    (function (DIRECTION) {
+        DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
+        DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
+    })(DIRECTION = Platform_Game.DIRECTION || (Platform_Game.DIRECTION = {}));
+})(Platform_Game || (Platform_Game = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
     var fudge = FudgeCore;
@@ -264,7 +271,6 @@ var Platform_Editor;
         }
         initialize(translation = new fudge.Vector3(0.7, -1, 0)) {
             let base = new fudge.Node("Base");
-            let standardY = -2;
             let sizeY = 2;
             let baseTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, 0, 0)));
             base.addComponent(baseTransform);
@@ -309,7 +315,6 @@ var Platform_Editor;
             return this;
         }
     }
-    EndPole.material = new ƒ.Material("Tower", ƒ.ShaderFlat, new ƒ.CoatColored());
     Platform_Editor.EndPole = EndPole;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
@@ -321,20 +326,57 @@ var Platform_Editor;
     class Enemy extends fudgeAid.NodeSprite {
         constructor() {
             super("Enemy");
+            this.currentDirection = Platform_Game.DIRECTION.RIGHT;
+            this.adjacentFloors = [];
+            this.update = () => {
+                let direction = (this.currentDirection == Platform_Game.DIRECTION.RIGHT ? 1 : -1);
+                this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
+                let timeFrame = fudge.Loop.timeFrameGame / 500;
+                let distance = fudge.Vector3.SCALE(Enemy.speed, timeFrame);
+                this.cmpTransform.local.translate(distance);
+                let adjacentFloorMtx;
+                if (this.currentDirection == Platform_Game.DIRECTION.LEFT) {
+                    adjacentFloorMtx = this.adjacentFloors[0].mtxLocal;
+                    if (this.mtxLocal.translation.x < adjacentFloorMtx.translation.x - adjacentFloorMtx.scaling.x / 2) {
+                        this.mtxLocal.translation.x = adjacentFloorMtx.translation.x - adjacentFloorMtx.scaling.x / 2;
+                        this.currentDirection = Platform_Game.DIRECTION.RIGHT;
+                    }
+                }
+                else {
+                    adjacentFloorMtx = this.adjacentFloors[this.adjacentFloors.length - 1].mtxLocal;
+                    if (this.mtxLocal.translation.x > adjacentFloorMtx.translation.x + adjacentFloorMtx.scaling.x / 2) {
+                        this.mtxLocal.translation.x = adjacentFloorMtx.translation.x + adjacentFloorMtx.scaling.x / 2;
+                        this.currentDirection = Platform_Game.DIRECTION.LEFT;
+                    }
+                }
+            };
         }
         getRectWorld() {
             return [Platform_Editor.Utils.getRectWorld(this)];
         }
-        initialize(translation = new fudge.Vector3(-0.5, -1, 0)) {
+        initialize(translation = new fudge.Vector3(-0.5, -1, 0), texture = "idle") {
+            let frames;
+            let textureId;
+            let action;
+            if (texture == "idle") {
+                frames = 4;
+                textureId = "#enemy_idle";
+                action = Platform_Game.ACTION.IDLE;
+            }
+            else if (texture == "walk") {
+                frames = 6;
+                textureId = "#enemy_walk";
+                action = Platform_Game.ACTION.WALK;
+            }
             this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
-            let img = document.querySelector("#enemy_idle");
+            let img = document.querySelector(textureId);
             let spritesheet = fudgeAid.createSpriteSheet("Enemy", img);
             Enemy.animations = {};
-            let sprite = new fudgeAid.SpriteSheetAnimation("Idle", spritesheet);
-            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), 4, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
-            Enemy.animations[Platform_Game.ACTION.IDLE] = sprite;
-            this.setAnimation(Enemy.animations[Platform_Game.ACTION.IDLE]);
-            this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
+            let sprite = new fudgeAid.SpriteSheetAnimation(texture, spritesheet);
+            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), frames, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
+            Enemy.animations[action] = sprite;
+            this.setAnimation(Enemy.animations[action]);
+            // this.color = this.getComponent(fudge.ComponentMaterial).clrPrimary;
         }
         serialize() {
             let serialization = {
@@ -344,12 +386,59 @@ var Platform_Editor;
             return serialization;
         }
         deserialize(_serialization) {
-            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0));
+            this.initialize(new fudge.Vector3(_serialization.translation.data[0], _serialization.translation.data[1], 0), "walk");
             this.name = _serialization.name;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
         }
+        preProcessEnemy(floors) {
+            let closestDistance = Number.MAX_VALUE;
+            let nearestFloor;
+            for (let i = 0; i < floors.length; i++) {
+                let distance = fudge.Vector3.DIFFERENCE(this.mtxLocal.translation, floors[i].mtxLocal.translation);
+                if (distance.magnitudeSquared < closestDistance) {
+                    nearestFloor = i;
+                    closestDistance = distance.magnitudeSquared;
+                }
+            }
+            this.mtxLocal.translation = new fudge.Vector3(this.mtxLocal.translation.x, floors[nearestFloor].mtxLocal.translation.y + (floors[nearestFloor].mtxLocal.scaling.y / 2), 0);
+            fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+            this.findAdjacentFloors(floors[nearestFloor], floors, nearestFloor);
+            this.adjacentFloors.sort(this.compare);
+        }
+        removeListener() {
+            fudge.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+        }
+        findAdjacentFloors(startFloor, floors, thisIndex) {
+            floors.splice(thisIndex, 1);
+            this.adjacentFloors.push(startFloor);
+            for (let i = 0; i < floors.length; i++) {
+                let startFloorMtx = startFloor.mtxLocal;
+                let currentFloorMtx = floors[i].mtxLocal;
+                if (Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
+                    let difference = currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x;
+                    if (startFloorMtx.translation.x > currentFloorMtx.translation.x) {
+                        if (difference >= 0) {
+                            this.findAdjacentFloors(floors[i], floors, i);
+                        }
+                    }
+                    else {
+                        if (difference <= 0) {
+                            this.findAdjacentFloors(floors[i], floors, i);
+                        }
+                    }
+                }
+                // if (currentFloorMtx.translation.x + currentFloorMtx.scaling.x / 2 + startFloorMtx.scaling.x / 2 - startFloorMtx.translation.x <= 0 && 
+                //     Math.abs((startFloorMtx.translation.y + startFloorMtx.scaling.y) - (currentFloorMtx.translation.y + currentFloorMtx.scaling.y)) < 0.05) {
+                //         this.findAdjacentFloors(floors[i], floors, i);
+                // }
+            }
+        }
+        compare(floorA, floorB) {
+            return floorA.mtxLocal.translation.x - floorB.mtxLocal.translation.x;
+        }
     }
+    Enemy.speed = new fudge.Vector3(1, 0, 0);
     Platform_Editor.Enemy = Enemy;
 })(Platform_Editor || (Platform_Editor = {}));
 ///<reference path="./PickableNode.ts" />
@@ -379,8 +468,6 @@ var Platform_Editor;
             let cmpMaterial = new fudge.ComponentMaterial(material);
             this.mtxLocal.scaleX(3);
             this.mtxLocal.scaleY(0.5);
-            // this.color = fudge.Color.CSS("LimeGreen");
-            // cmpMaterial.clrPrimary = this.color;
             this.addComponent(cmpMaterial);
         }
         getRectWorld() {

@@ -48,7 +48,6 @@ namespace Platform_Editor {
         viewport.draw();
     }
 
-
     function initializeEditorViewport(): void {
         const editorCanvas: HTMLCanvasElement = document.querySelector("#editor_canvas");
         editorCanvas.height = viewport.getCanvasRectangle().height;
