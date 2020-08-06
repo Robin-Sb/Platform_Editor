@@ -462,6 +462,7 @@ var Platform_Editor;
             this._isPickable = _serialization.isPickable;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
+
         }
     }
     Platform_Editor.Floor = Floor;

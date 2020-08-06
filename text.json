@@ -1,0 +1,96 @@
+{
+  "ƒ.Node": {
+    "name": "graph",
+    "components": {
+      "ComponentLight": [
+        {
+          "ƒ.ComponentLight": {
+            "active": true
+          }
+        }
+      ]
+    },
+    "children": [
+      {
+        "Platform_Editor.Enemy": {
+          "name": "Enemy",
+          "components": {
+            "ComponentPicker": [
+              {
+                "Platform_Editor.ComponentPicker": {
+                  "active": true
+                }
+              }
+            ],
+            "ComponentTransform": [
+              {
+                "ƒ.ComponentTransform": {
+                  "local": {
+                    "translation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "scaling": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  },
+                  "Component": {
+                    "active": true
+                  }
+                }
+              }
+            ],
+            "ComponentMesh": [
+              {
+                "ƒ.ComponentMesh": {
+                  "mesh": {
+                    "ƒ.MeshSphere": {}
+                  },
+                  "pivot": {
+                    "translation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "scaling": {
+                      "x": 1,
+                      "y": 1,
+                      "z": 1
+                    }
+                  },
+                  "Component": {
+                    "active": true
+                  }
+                }
+              }
+            ],
+            "ComponentMaterial": [
+              {
+                "ƒ.ComponentMaterial": {
+                  "idMaterial": "Material|2020-07-12T17:34:33.064Z|32011",
+                  "Component": {
+                    "active": true
+                  }
+                }
+              }
+            ]
+          },
+          "children": []
+        }
+      }
+    ]
+  }
+}
