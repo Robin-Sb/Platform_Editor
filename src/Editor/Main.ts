@@ -27,13 +27,29 @@ namespace Platform_Editor {
 
         fudgeAid.addStandardLightComponents(graph, new fudge.Color(0.5, 0.5, 0.5));
 
+        let startTile: Floor = new Floor(false);
+        startTile.initialize(new fudge.Vector3(0, 0, 0), "#pavement_text");
+
+        graph.addChild(startTile);
+
         viewport = new fudge.Viewport();
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
         viewport.addEventListener(fudge.EVENT_POINTER.MOVE, pointerMove);
         viewport.activatePointerEvent(fudge.EVENT_POINTER.MOVE, true);
 
+        initializeEditorViewport();
+        editorViewport.draw();
+
+        // tslint:disable-next-line: no-unused-expression
+        new ViewportControl();
+        viewport.draw();
+        fudge.Serializer.registerNamespace(Platform_Editor);
+    }
+
+    function initializeEditorViewport(): void {
         const editorCanvas: HTMLCanvasElement = document.querySelector("#editor_canvas");
+        editorCanvas.height = viewport.getCanvasRectangle().height;
         let editorGraph: fudge.Node = new fudge.Node("Editor Graph");
         fudgeAid.addStandardLightComponents(editorGraph, new fudge.Color(0.5, 0.5, 0.5));
 
@@ -42,18 +58,18 @@ namespace Platform_Editor {
         let editorCamera: fudge.ComponentCamera = new fudge.ComponentCamera();
         editorCamera.pivot.translateZ(5);
         editorCamera.pivot.lookAt(fudge.Vector3.ZERO());
-        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.1);
+        editorCamera.backgroundColor = new fudge.Color(1, 1, 1, 0.2);
 
         editorViewport.initialize("Test", editorGraph, editorCamera, editorCanvas);
-        editorGraph.addChild(new BaseNode());
-        editorGraph.addChild(new Enemy());
-
-        editorViewport.draw();
-
-        // tslint:disable-next-line: no-unused-expression
-        new ViewportControl(cameraZ);
-
-        viewport.draw();
+        let baseNode: Floor = new Floor();
+        baseNode.initialize();
+        let enemy: Enemy = new Enemy();
+        enemy.initialize();
+        let endPole: EndPole = new EndPole();
+        endPole.initialize();
+        editorGraph.addChild(baseNode);
+        editorGraph.addChild(enemy);
+        editorGraph.addChild(endPole);
     }
 
     function pointerMove(_event: fudge.EventPointer): void {
@@ -70,11 +86,13 @@ namespace Platform_Editor {
     }
 
     function serializeGraph(): void {
-        fudge.Serializer.registerNamespace(Platform_Editor);
-        let serialization: fudge.Serialization = fudge.Serializer.serialize(graph);
-        let json: string = fudge.Serializer.stringify(serialization);
-        console.log(json);
-        save(json, "text.json");
+        if (viewport.getGraph().getChildrenByName("EndPole").length != 1) {
+            alert("The endpole must be set!");
+            return;
+        }
+        let serializedGraph: fudge.Serialization = fudge.Serializer.serialize(viewport.getGraph());
+        let json: string = fudge.Serializer.stringify(serializedGraph);
+        save(json, "game.json");
     }
 
     function save(_content: string, _filename: string): void {
@@ -90,6 +108,8 @@ namespace Platform_Editor {
         document.body.removeChild(downloader);
         window.URL.revokeObjectURL(url);
     }    
+
+
     
     // function event(): void {
     //     let node: fudge.Node = new fudge.Node("node");

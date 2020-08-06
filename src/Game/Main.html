@@ -7,12 +7,40 @@
   <script src="../../FudgeCore/FudgeCore.js"></script>
   <script src="../../FudgeAid/FudgeAid.js"></script>
   <script src="Game.js"></script>
-
+  <link rel="stylesheet" href="../Editor/style.css"></link>
 </head>
 
+<style>
+
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    html {
+        height: 100%;
+        margin: 0px;
+    }
+
+    canvas {
+        flex-grow: 1;
+        height: 95vh;
+        width: 100%;
+    }
+
+</style>
+
 <body>
-    <input type="file" id="file-input" />
-    <canvas id="canvas"></canvas>  
+    <input class="button" type="file" id="file-input" />
+    <canvas id="canvas"></canvas>
+    <img id="player_walk" src="../assets/Player/Walk_6.png" style="display: none;"/>
+    <img id="player_idle" src="../assets/Player/Idle_4.png" style="display: none;"/>
+    <img id="enemy_idle" src="../assets/Enemy/Idle_4.png" style="display: none;"/>
+    <img id="enemy_walk" src="../assets/Enemy/Walk_6.png" style="display: none;"/>
+    <img id="grass_text" src="../assets/grass.png" style="display: none;"/>
+    <img id="pavement_text" src="../assets/pavement.png" style="display: none;"/>
+    <img id="polebase_text" src="../assets/brushed_metal/diffuse.jpg" style="display: none;"/>
+    <img id="poletop_text" src="../assets/gold/base.jpg" style="display: none;"/>
 </body>
 
 </html>
