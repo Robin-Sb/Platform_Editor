@@ -59,8 +59,8 @@ var Platform_Game;
         for (let enemy of enemies) {
             enemy.preProcessEnemy(graph.getChildrenByName("Floor"));
         }
-        Platform_Game.Player.generateSprite();
-        player = new Platform_Game.Player();
+        Player.generateSprite();
+        player = new Player();
         Platform_Game.viewport.getGraph().addChild(player);
         Platform_Game.viewport.draw();
         fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
@@ -105,132 +105,6 @@ var Platform_Game;
         };
         reader.readAsText(file);
     }
-})(Platform_Game || (Platform_Game = {}));
-var Platform_Game;
-(function (Platform_Game) {
-    var fudge = FudgeCore;
-    var fudgeAid = FudgeAid;
-    class Player extends fudgeAid.NodeSprite {
-        constructor(_name = "Player") {
-            super(_name);
-            this.speed = fudge.Vector3.ZERO();
-            this.update = (_event) => {
-                this.checkEnemyCollision();
-                let oldY = this.mtxLocal.translation.y;
-                let timeFrame = fudge.Loop.timeFrameGame / 500;
-                this.speed.y += Player.gravity.y * timeFrame;
-                let distance = fudge.Vector3.SCALE(this.speed, timeFrame);
-                this.cmpTransform.local.translate(distance);
-                this.checkCollision(oldY);
-                if (this.mtxLocal.translation.y < Platform_Game.lowestTile - 5) {
-                    alert("You lost!");
-                    fudge.Loop.stop();
-                }
-                let endPoleX = Platform_Game.viewport.getGraph().getChildrenByName("EndPole")[0].mtxLocal.translation.x;
-                let hasWon = false;
-                if (Platform_Game.isRightSided) {
-                    if (this.mtxLocal.translation.x > endPoleX) {
-                        hasWon = true;
-                    }
-                }
-                else {
-                    if (this.mtxLocal.translation.x < endPoleX) {
-                        hasWon = true;
-                    }
-                }
-                if (hasWon) {
-                    Platform_Game.audioComponents["FinishLevel"].play(true);
-                    alert("You won!");
-                    fudge.Loop.stop();
-                }
-            };
-            this.addComponent(new fudge.ComponentTransform());
-            this.show(Platform_Game.ACTION.IDLE);
-            this.cmpTransform.local.translateZ(0.1);
-            fudge.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
-        }
-        static generateSprite() {
-            let walkImg = document.querySelector("#player_walk");
-            Player.animations = {};
-            Player.appendSprite(walkImg, Platform_Game.ACTION.WALK, 6);
-            let idleImg = document.querySelector("#player_idle");
-            let sprite = Player.appendSprite(idleImg, Platform_Game.ACTION.IDLE, 4);
-            sprite.frames[2].timeScale = 10;
-        }
-        static appendSprite(image, action, frames) {
-            let spritesheet = fudgeAid.createSpriteSheet("Player", image);
-            let sprite = new fudgeAid.SpriteSheetAnimation(Platform_Game.ACTION.WALK, spritesheet);
-            sprite.generateByGrid(fudge.Rectangle.GET(0, 0, 32, 32), frames, fudge.Vector2.ZERO(), 32, fudge.ORIGIN2D.BOTTOMCENTER);
-            Player.animations[action] = sprite;
-            return sprite;
-        }
-        act(_action, _direction) {
-            switch (_action) {
-                case Platform_Game.ACTION.IDLE:
-                    this.speed.x = 0;
-                    break;
-                case Platform_Game.ACTION.WALK:
-                    let direction = (_direction == Platform_Game.DIRECTION.RIGHT ? 1 : -1);
-                    this.speed.x = Player.speedMax.x; // * direction;
-                    this.cmpTransform.local.rotation = fudge.Vector3.Y(90 - 90 * direction);
-                    break;
-                case Platform_Game.ACTION.JUMP:
-                    if (this.speed.y == 0) {
-                        this.speed.y = 3;
-                    }
-                    break;
-            }
-            if (_action == this.action)
-                return;
-            this.action = _action;
-            this.show(_action);
-        }
-        show(_action) {
-            //show only the animation defined for the action
-            if (_action == Platform_Game.ACTION.JUMP)
-                return;
-            this.setAnimation(Player.animations[_action]);
-        }
-        checkCollision(oldY) {
-            let nodes = Platform_Game.viewport.getGraph().getChildrenByName("Floor");
-            for (let floor of nodes) {
-                if (oldY < floor.mtxLocal.translation.y)
-                    continue;
-                let rect = floor.getRectWorld()[0];
-                let hit = rect.isInside(this.cmpTransform.local.translation.toVector2());
-                if (hit) {
-                    let translation = this.cmpTransform.local.translation;
-                    translation.y = rect.y;
-                    this.cmpTransform.local.translation = translation;
-                    this.speed.y = 0;
-                }
-            }
-        }
-        checkEnemyCollision() {
-            let nodes = Platform_Game.viewport.getGraph().getChildrenByName("Enemy");
-            for (let enemy of nodes) {
-                let rect = enemy.getRectWorld()[0];
-                let pivot = this.cmpTransform.local.translation.toVector2();
-                pivot.y = pivot.y + this.cmpTransform.local.scaling.y / 2;
-                let hit = rect.isInside(pivot);
-                if (hit) {
-                    if (this.mtxLocal.translation.y > enemy.mtxLocal.translation.y + enemy.mtxLocal.scaling.y / 2 - 0.12) {
-                        Platform_Game.audioComponents["EnemyHit"].play(true);
-                        Platform_Game.viewport.getGraph().removeChild(enemy);
-                        enemy.removeListener();
-                    }
-                    else {
-                        Platform_Game.audioComponents["PlayerFail"].play(true);
-                        alert("You lost!");
-                        fudge.Loop.stop();
-                    }
-                }
-            }
-        }
-    }
-    Player.speedMax = new fudge.Vector2(1.5, 5); // units per second
-    Player.gravity = fudge.Vector2.Y(-3);
-    Platform_Game.Player = Player;
 })(Platform_Game || (Platform_Game = {}));
 var Platform_Game;
 (function (Platform_Game) {
@@ -462,7 +336,6 @@ var Platform_Editor;
             this._isPickable = _serialization.isPickable;
             this.dispatchEvent(new Event("nodeDeserialized" /* NODE_DESERIALIZED */));
             return this;
-
         }
     }
     Platform_Editor.Floor = Floor;
