@@ -1,5 +1,6 @@
-namespace Platform_Game {
+///<reference path="./Player.ts" />
 
+namespace Platform_Game {
     import fudge = FudgeCore;
     import fudgeAid = FudgeAid;
     window.addEventListener("load", gameLoad);
