@@ -1,4 +1,4 @@
-final assignment for prima
+## Platform Editor
 
 + [Designdokument](https://github.com/Robin-Sb/Platform_Editor/blob/master/files/Designdokument.pdf)
 + [Pages Editor](https://robin-sb.github.io/Platform_Editor/src/Editor/Main.html)
@@ -12,7 +12,7 @@ final assignment for prima
 |    | Name                  | Robin Schwab
 |    | Matrikelnummer        | 256325
 |  1 | Nutzerinteraktion     | Im Editor: Navigieren der Szene über Shift + Mausbewegen / Objekte zur Szene hinzufügen über Mausklick / Objekte verschieben mit Drag and Drop (zum Grid snappen über Ctrl-links) / Selektierte Objekte entfernen über delete / Aktionen rückgängig machen über Ctrl + Z (experimentell). ///// Im Game: Bewegen über a/d oder linke/rechte Pfeiltasten / Springen mit Leertaste / Musik stummschalten mit m |
-|  2 | Objektinteraktion     | Es wird jeden Frame überprüft ob der Spieler eine Bewegung nach unten vollzieht, wenn er dabei mit dem Boden kollidieren würde, wird er nach oben translatiert. Außerdem wird geschaut, ob der Charakter mit einem Gegner kollidiert; wenn er von oben mit dem Gegner kollidiert, wird der Gegner entfernt, ansonsten hat man das Spiel verloren und der Game-Loop wird beendet.|
+|  2 | Objektinteraktion     | Es wird jeden Frame überprüft, ob der Spieler eine Bewegung nach unten vollzieht, wenn er dabei mit dem Boden kollidieren würde, wird er nach oben translatiert. Außerdem wird geschaut, ob der Charakter mit einem Gegner kollidiert; wenn er von oben mit dem Gegner kollidiert, wird der Gegner entfernt, ansonsten hat man das Spiel verloren und der Game-Loop wird beendet. Zudem wird geprüft, ob der Gegner sich am Rande seiner begehbaren Plattformen befindet, ansonsten wirt um 180° rotiert|
 |  3 | Objektanzahl variabel | Es wird immer im Editor ein neues Objekt erzeugt, sobald der Nutzer ein Objekt zur Szene hinzugefügt hat. Dabei wird einfach ein neues Objekt erzeugt, das die gleiche Translation hat wie das vorherige Objekt.     |                                                                                                                                         
 |  4 | Szenenhierarchie      | Hierarchisch aufgebaute Objekte sind hierachisch organisiert, zum Beispiel die Zielfahne besitzt zwei Kinder Base und Top, bei denen die Transformation durch die Transformation der Parent-Node bestimmt wird. Ansonsten wurde auf eine komplexe Szenenhierachie verzichtet, damit beim Picking im Editor nicht jedes Mal die komplexe Hierachie durchsucht werden muss.                                                                                                                                               |
 |  5 | Sound                 | Eine Hintergrundmusik ist eingebunden, die für eine fröhliche Atmosphäre sorgen soll. Außerdem werden jeweils Sounds abgespielt, wenn 1)  der Spieler einen Gegner besiegt 2) der Spieler von einem Gegner besiegt wird 3) das Spiel beendet wird. |
