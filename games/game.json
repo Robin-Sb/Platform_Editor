@@ -1,0 +1,160 @@
+{
+  "ƒ.Node": {
+    "name": "graph",
+    "components": {
+      "ComponentLight": [
+        {
+          "ƒ.ComponentLight": {
+            "active": true
+          }
+        },
+        {
+          "ƒ.ComponentLight": {
+            "active": true
+          }
+        },
+        {
+          "ƒ.ComponentLight": {
+            "active": true
+          }
+        }
+      ]
+    },
+    "children": [
+      {
+        "Platform_Editor.Floor": {
+          "name": "Floor",
+          "translation": {
+            "data": {
+              "0": 0,
+              "1": 0,
+              "2": 0
+            }
+          },
+          "textureId": "#pavement_text",
+          "isPickable": false
+        }
+      },
+      {
+        "Platform_Editor.Floor": {
+          "name": "Floor",
+          "translation": {
+            "data": {
+              "0": 3,
+              "1": 0,
+              "2": 0.009999999776482582
+            }
+          },
+          "textureId": "#grass_text",
+          "isPickable": true
+        }
+      },
+      {
+        "Platform_Editor.Floor": {
+          "name": "Floor",
+          "translation": {
+            "data": {
+              "0": 6,
+              "1": 0,
+              "2": 0.009999999776482582
+            }
+          },
+          "textureId": "#grass_text",
+          "isPickable": true
+        }
+      },
+      {
+        "Platform_Editor.Floor": {
+          "name": "Floor",
+          "translation": {
+            "data": {
+              "0": 9.100000381469727,
+              "1": -1.2000000476837158,
+              "2": 0.009999999776482582
+            }
+          },
+          "textureId": "#grass_text",
+          "isPickable": true
+        }
+      },
+      {
+        "Platform_Editor.Floor": {
+          "name": "Floor",
+          "translation": {
+            "data": {
+              "0": 12.100000381469727,
+              "1": -1.2000000476837158,
+              "2": 0.009999999776482582
+            }
+          },
+          "textureId": "#grass_text",
+          "isPickable": true
+        }
+      },
+      {
+        "Platform_Editor.Enemy": {
+          "name": "Enemy",
+          "translation": {
+            "data": {
+              "0": 11.199999809265137,
+              "1": -1,
+              "2": 0.009999999776482582
+            }
+          }
+        }
+      },
+      {
+        "Platform_Editor.Floor": {
+          "name": "Floor",
+          "translation": {
+            "data": {
+              "0": 15.399999618530273,
+              "1": -0.10000000149011612,
+              "2": 0.009999999776482582
+            }
+          },
+          "textureId": "#grass_text",
+          "isPickable": true
+        }
+      },
+      {
+        "Platform_Editor.Floor": {
+          "name": "Floor",
+          "translation": {
+            "data": {
+              "0": 18.799999237060547,
+              "1": 0.8999999761581421,
+              "2": 0.009999999776482582
+            }
+          },
+          "textureId": "#grass_text",
+          "isPickable": true
+        }
+      },
+      {
+        "Platform_Editor.Enemy": {
+          "name": "Enemy",
+          "translation": {
+            "data": {
+              "0": 18,
+              "1": 1.100000023841858,
+              "2": 0.009999999776482582
+            }
+          }
+        }
+      },
+      {
+        "Platform_Editor.EndPole": {
+          "name": "EndPole",
+          "translation": {
+            "data": {
+              "0": 20.100000381469727,
+              "1": 2.0999999046325684,
+              "2": 0.009999999776482582
+            }
+          }
+        }
+      }
+    ]
+  }
+}
