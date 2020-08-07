@@ -40,7 +40,7 @@ namespace Platform_Editor {
         public serialize(): fudge.Serialization {
             let serialization: fudge.Serialization = {
                 name: this.name,
-                translation: this.mtxLocal.translation,
+                translation: this.mtxLocal.translation
             };
             return serialization;
         }

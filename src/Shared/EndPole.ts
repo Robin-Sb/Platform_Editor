@@ -16,7 +16,7 @@ namespace Platform_Editor {
 
             let baseMesh: fudge.ComponentMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             base.addComponent(baseMesh);
-            base.mtxLocal.scale(new fudge.Vector3(0.5, sizeY, 0));
+            base.mtxLocal.scale(new fudge.Vector3(0.4, sizeY - 0.1, 0));
 
             let baseTextured: fudge.CoatTextured = Utils.generateTextureFromId("#polebase_text");
             let material: fudge.Material = new fudge.Material("PoleMtr", fudge.ShaderTexture, baseTextured);
@@ -24,8 +24,9 @@ namespace Platform_Editor {
             base.addComponent(baseMaterial);   
 
             let top: fudge.Node = new fudge.Node("Top");
-            let topTransform: fudge.ComponentTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2 + 0.3, 0)));
+            let topTransform: fudge.ComponentTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2, 0)));
             top.addComponent(topTransform);
+            top.mtxLocal.scale(fudge.Vector3.ONE(0.8));
 
             let topMesh: fudge.ComponentMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
             top.addComponent(topMesh);
@@ -35,7 +36,7 @@ namespace Platform_Editor {
             let topcmpMaterial: fudge.ComponentMaterial = new fudge.ComponentMaterial(topMaterial);
             top.addComponent(topcmpMaterial);   
 
-            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(translation)));
+            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
             this.addChild(base);
             this.addChild(top);
         }

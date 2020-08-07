@@ -3,7 +3,7 @@
 namespace Platform_Editor {
     import fudge = FudgeCore; 
     
-    export class Floor extends fudge.Node implements PickableNode  {
+    export class Floor extends fudge.Node implements PickableNode {
         private _isPickable: boolean = true;
         private textureId: string;
 

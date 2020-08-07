@@ -87,25 +87,12 @@ var Platform_Editor;
         document.body.removeChild(downloader);
         window.URL.revokeObjectURL(url);
     }
-    // function event(): void {
-    //     let node: fudge.Node = new fudge.Node("node");
-    //     let child: fudge.Node = new fudge.Node("child");
-    //     child.addEventListener("callChild", callChild, true);
-    //     node.broadcastEvent(new CustomEvent("call Child"));
-    //     // up event with dispatch event
-    // }
-    // function callChild(_event: Event): void {
-    //     console.log(_event.target);
-    // }
 })(Platform_Editor || (Platform_Editor = {}));
 var Platform_Editor;
 (function (Platform_Editor) {
     var fudge = FudgeCore;
     class ViewportControl {
         constructor() {
-            // look at mutators again and serialization
-            //private states: Array<{funct: (node: fudge.Node) => void, object: fudge.Node}> = new Array<{funct: (node: fudge.Node) => void, object: fudge.Node}>();
-            //private states: Array<{node: fudge.Node, oldState: string}> = [];
             this.states = [];
             this.control = (event) => {
                 if (event.ctrlKey && event.key === "z") {
@@ -141,8 +128,6 @@ var Platform_Editor;
             };
             this.releaseNode = (_event) => {
                 if (this.selectedNode) {
-                    let cmpMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                    //cmpMaterial.clrPrimary = this.selectedNode.color;
                     if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.CTRL_LEFT])) {
                         let translation = this.selectedNode.mtxLocal.translation;
                         translation.x = Math.round(translation.x * 10) / 10;
@@ -155,7 +140,6 @@ var Platform_Editor;
             };
             this.pickEditorNode = (_event) => {
                 let pickedNodes = this.pickNodes(_event.canvasX, _event.canvasY, Platform_Editor.editorViewport, Platform_Editor.editorViewport.getGraph().getChildren());
-                // maybe think of some logic to find the most senseful item (z-index?)
                 for (let node of pickedNodes) {
                     this.convertToMainViewport(node);
                     let pickableNode;
@@ -231,7 +215,6 @@ var Platform_Editor;
                         continue;
                     }
                 }
-                //let translation: fudge.Vector3 = node.mtxLocal.translation;
                 let intersection = ray.intersectPlane(new fudge.Vector3(1, 1, 0), new fudge.Vector3(0, 0, 1));
                 for (let rect of node.getRectWorld()) {
                     if (rect.isInside(intersection.toVector2())) {
@@ -275,21 +258,22 @@ var Platform_Editor;
             base.addComponent(baseTransform);
             let baseMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             base.addComponent(baseMesh);
-            base.mtxLocal.scale(new fudge.Vector3(0.5, sizeY, 0));
+            base.mtxLocal.scale(new fudge.Vector3(0.4, sizeY - 0.1, 0));
             let baseTextured = Platform_Editor.Utils.generateTextureFromId("#polebase_text");
             let material = new fudge.Material("PoleMtr", fudge.ShaderTexture, baseTextured);
             let baseMaterial = new fudge.ComponentMaterial(material);
             base.addComponent(baseMaterial);
             let top = new fudge.Node("Top");
-            let topTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2 + 0.3, 0)));
+            let topTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2, 0)));
             top.addComponent(topTransform);
+            top.mtxLocal.scale(fudge.Vector3.ONE(0.8));
             let topMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
             top.addComponent(topMesh);
             let topTextured = Platform_Editor.Utils.generateTextureFromId("#poletop_text");
             let topMaterial = new fudge.Material("PoleMtr", fudge.ShaderTexture, topTextured);
             let topcmpMaterial = new fudge.ComponentMaterial(topMaterial);
             top.addComponent(topcmpMaterial);
-            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(translation)));
+            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
             this.addChild(base);
             this.addChild(top);
         }
@@ -371,7 +355,7 @@ var Platform_Editor;
         serialize() {
             let serialization = {
                 name: this.name,
-                translation: this.mtxLocal.translation,
+                translation: this.mtxLocal.translation
             };
             return serialization;
         }
@@ -483,14 +467,14 @@ var Platform_Editor;
     var fudge = FudgeCore;
     class Utils {
         static getRectWorld(node) {
-            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
-            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
-            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
-            let pivot = node.getComponent(ƒ.ComponentMesh).pivot;
-            let mtxResult = ƒ.Matrix4x4.MULTIPLICATION(node.mtxWorld, pivot);
+            let rect = fudge.Rectangle.GET(0, 0, 100, 100);
+            let topleft = new fudge.Vector3(-0.5, 0.5, 0);
+            let bottomright = new fudge.Vector3(0.5, -0.5, 0);
+            let pivot = node.getComponent(fudge.ComponentMesh).pivot;
+            let mtxResult = fudge.Matrix4x4.MULTIPLICATION(node.mtxWorld, pivot);
             topleft.transform(mtxResult, true);
             bottomright.transform(mtxResult, true);
-            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            let size = new fudge.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
             rect.position = topleft.toVector2();
             rect.size = size;
             return rect;

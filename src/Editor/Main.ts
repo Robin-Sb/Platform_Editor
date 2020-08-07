@@ -10,7 +10,6 @@ namespace Platform_Editor {
     let oldY: number;
     let graph: fudge.Node = new fudge.Node("graph");
  
-
     function editorLoad(_event: Event): void {
         let cameraZ: number = 10;
         const canvas: HTMLCanvasElement = document.querySelector("#scene_canvas");
@@ -108,19 +107,4 @@ namespace Platform_Editor {
         document.body.removeChild(downloader);
         window.URL.revokeObjectURL(url);
     }    
-
-
-    
-    // function event(): void {
-    //     let node: fudge.Node = new fudge.Node("node");
-    //     let child: fudge.Node = new fudge.Node("child");
-    //     child.addEventListener("callChild", callChild, true);
-    //     node.broadcastEvent(new CustomEvent("call Child"));
-
-    //     // up event with dispatch event
-    // }
-
-    // function callChild(_event: Event): void {
-    //     console.log(_event.target);
-    // }
 }

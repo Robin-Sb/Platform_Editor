@@ -265,21 +265,22 @@ var Platform_Editor;
             base.addComponent(baseTransform);
             let baseMesh = new fudge.ComponentMesh(new fudge.MeshQuad());
             base.addComponent(baseMesh);
-            base.mtxLocal.scale(new fudge.Vector3(0.5, sizeY, 0));
+            base.mtxLocal.scale(new fudge.Vector3(0.4, sizeY - 0.1, 0));
             let baseTextured = Platform_Editor.Utils.generateTextureFromId("#polebase_text");
             let material = new fudge.Material("PoleMtr", fudge.ShaderTexture, baseTextured);
             let baseMaterial = new fudge.ComponentMaterial(material);
             base.addComponent(baseMaterial);
             let top = new fudge.Node("Top");
-            let topTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2 + 0.3, 0)));
+            let topTransform = new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(new fudge.Vector3(0, sizeY / 2, 0)));
             top.addComponent(topTransform);
+            top.mtxLocal.scale(fudge.Vector3.ONE(0.8));
             let topMesh = new fudge.ComponentMesh(new fudge.MeshSphere());
             top.addComponent(topMesh);
             let topTextured = Platform_Editor.Utils.generateTextureFromId("#poletop_text");
             let topMaterial = new fudge.Material("PoleMtr", fudge.ShaderTexture, topTextured);
             let topcmpMaterial = new fudge.ComponentMaterial(topMaterial);
             top.addComponent(topcmpMaterial);
-            this.addComponent(new ƒ.ComponentTransform(ƒ.Matrix4x4.TRANSLATION(translation)));
+            this.addComponent(new fudge.ComponentTransform(fudge.Matrix4x4.TRANSLATION(translation)));
             this.addChild(base);
             this.addChild(top);
         }
@@ -361,7 +362,7 @@ var Platform_Editor;
         serialize() {
             let serialization = {
                 name: this.name,
-                translation: this.mtxLocal.translation,
+                translation: this.mtxLocal.translation
             };
             return serialization;
         }
@@ -473,14 +474,14 @@ var Platform_Editor;
     var fudge = FudgeCore;
     class Utils {
         static getRectWorld(node) {
-            let rect = ƒ.Rectangle.GET(0, 0, 100, 100);
-            let topleft = new ƒ.Vector3(-0.5, 0.5, 0);
-            let bottomright = new ƒ.Vector3(0.5, -0.5, 0);
-            let pivot = node.getComponent(ƒ.ComponentMesh).pivot;
-            let mtxResult = ƒ.Matrix4x4.MULTIPLICATION(node.mtxWorld, pivot);
+            let rect = fudge.Rectangle.GET(0, 0, 100, 100);
+            let topleft = new fudge.Vector3(-0.5, 0.5, 0);
+            let bottomright = new fudge.Vector3(0.5, -0.5, 0);
+            let pivot = node.getComponent(fudge.ComponentMesh).pivot;
+            let mtxResult = fudge.Matrix4x4.MULTIPLICATION(node.mtxWorld, pivot);
             topleft.transform(mtxResult, true);
             bottomright.transform(mtxResult, true);
-            let size = new ƒ.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
+            let size = new fudge.Vector2(bottomright.x - topleft.x, bottomright.y - topleft.y);
             rect.position = topleft.toVector2();
             rect.size = size;
             return rect;

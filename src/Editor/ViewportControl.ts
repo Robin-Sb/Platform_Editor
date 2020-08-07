@@ -2,11 +2,6 @@ namespace Platform_Editor {
     import fudge = FudgeCore;
     export class ViewportControl {
         private selectedNode: PickableNode;
-
-        // look at mutators again and serialization
-
-        //private states: Array<{funct: (node: fudge.Node) => void, object: fudge.Node}> = new Array<{funct: (node: fudge.Node) => void, object: fudge.Node}>();
-        //private states: Array<{node: fudge.Node, oldState: string}> = [];
         private states: Array<{serialization: fudge.Serialization, endPoleSet: boolean}> = [];
 
         constructor() {
@@ -76,8 +71,6 @@ namespace Platform_Editor {
     
         private releaseNode = (_event: fudge.EventPointer): void => {
             if (this.selectedNode) {
-                let cmpMaterial: fudge.ComponentMaterial = this.selectedNode.getComponent(fudge.ComponentMaterial);
-                //cmpMaterial.clrPrimary = this.selectedNode.color;
                 if (fudge.Keyboard.isPressedOne([fudge.KEYBOARD_CODE.CTRL_LEFT])) {
                     let translation: fudge.Vector3 = this.selectedNode.mtxLocal.translation;
                     translation.x = Math.round(translation.x * 10) / 10;
@@ -117,7 +110,6 @@ namespace Platform_Editor {
     
         private pickEditorNode = (_event: fudge.EventPointer): void => {
             let pickedNodes: PickableNode[] = this.pickNodes(_event.canvasX, _event.canvasY, editorViewport, <PickableNode[]> editorViewport.getGraph().getChildren());
-            // maybe think of some logic to find the most senseful item (z-index?)
             for (let node of pickedNodes) {
                 this.convertToMainViewport(node);
 
@@ -154,8 +146,6 @@ namespace Platform_Editor {
                         continue;
                     }
                 }
-
-                //let translation: fudge.Vector3 = node.mtxLocal.translation;
                 let intersection: fudge.Vector3 = ray.intersectPlane(new fudge.Vector3(1, 1, 0), new fudge.Vector3(0, 0, 1));
 
                 for (let rect of node.getRectWorld()) {
