@@ -9,8 +9,8 @@
 | Nr | Bezeichnung           | Inhalt                                                                                                                                                                                                                                                                         |
 |---:|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |    | Titel                 | Platform Editor
-|    | Name                  | Robin Schwab
-|    | Matrikelnummer        | 256325
+|    | Name                  | 
+|    | Matrikelnummer        | 
 |  1 | Nutzerinteraktion     | Im Editor: Navigieren der Szene über Shift + Mausbewegen / Objekte zur Szene hinzufügen über Mausklick / Objekte verschieben mit Drag and Drop (zum Grid snappen über Ctrl-links) / Selektierte Objekte entfernen über delete / Aktionen rückgängig machen über Ctrl + Z (experimentell). ///// Im Game: Bewegen über a/d oder linke/rechte Pfeiltasten / Springen mit Leertaste / Musik stummschalten mit m |
 |  2 | Objektinteraktion     | Es wird jeden Frame überprüft, ob der Spieler eine Bewegung nach unten vollzieht, wenn er dabei mit dem Boden kollidieren würde, wird er nach oben translatiert. Außerdem wird geschaut, ob der Charakter mit einem Gegner kollidiert; wenn er von oben mit dem Gegner kollidiert, wird der Gegner entfernt, ansonsten hat man das Spiel verloren und der Game-Loop wird beendet. Zudem wird geprüft, ob der Gegner sich am Rande seiner begehbaren Plattformen befindet, ansonsten wird um 180° rotiert. |
 |  3 | Objektanzahl variabel | Es wird immer im Editor ein neues Objekt erzeugt, sobald der Nutzer ein Objekt zur Szene hinzugefügt hat. Dabei wird einfach ein neues Objekt erzeugt, das die gleiche Translation hat wie das vorherige Objekt.     |                                                                                                                                         
